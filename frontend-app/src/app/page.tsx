@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   MousePointer2, Waves, ScanEye, GitBranch,
   ArrowRight, CheckCircle2, Download, Monitor,
-  Zap, Lock, Users, ChevronRight
+  Zap, Lock, Users, ChevronRight, Fingerprint
 } from "lucide-react";
 import Link from "next/link";
 
@@ -21,14 +21,19 @@ const features = [
   },
   {
     icon: <ScanEye className="w-6 h-6 text-violet-600" />,
-    title: "8 Gesture Types",
+    title: "8 Native Gestures",
     description: "Click, double-click, right-click, drag, scroll, zoom, and pause — all contactless.",
+  },
+  {
+    icon: <Fingerprint className="w-6 h-6 text-emerald-600" />,
+    title: "Custom Gestures",
+    description: "Record your own hand orientations to trigger custom actions and shortcuts.",
   },
 ];
 
 const trustStats = [
   { value: "<50ms", label: "Response latency" },
-  { value: "8",     label: "Gesture types" },
+  { value: "∞",     label: "Gesture types" },
   { value: "100%",  label: "Offline & private" },
   { value: "3 min", label: "To get started" },
 ];

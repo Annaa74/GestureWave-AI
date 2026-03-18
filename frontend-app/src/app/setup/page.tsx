@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Terminal, Package, Play, AlertTriangle, CheckCircle2, Copy, Monitor, Camera, Cpu } from "lucide-react";
+import { Terminal, Package, Play, AlertTriangle, CheckCircle2, Copy, Monitor, Camera, Cpu, Fingerprint } from "lucide-react";
 import { useState } from "react";
 
 const steps = [
@@ -45,6 +45,17 @@ pip install mediapipe opencv-python pyautogui numpy`,
     title: "Run GestureWave AI",
     description: "Launch the hand tracking engine and start controlling your cursor.",
     code: `python main.py`,
+    lang: "bash",
+  },
+  {
+    number: "05",
+    icon: <Fingerprint className="w-5 h-5" />,
+    title: "Record Custom Gestures",
+    description: "Press 'R' in the camera window to record your own custom hand poses.",
+    code: `# 1. Run main.py
+# 2. Press 'R' on keyboard
+# 3. Hold pose for 3 seconds
+# 4. Gesture saved!`,
     lang: "bash",
   },
 ];
@@ -237,12 +248,12 @@ export default function SetupPage() {
           <h2 className="text-2xl font-bold mb-6 text-center">Gesture Reference</h2>
           <div className="grid md:grid-cols-3 gap-6 text-center">
             {[
-              { gesture: "☝️ Index Finger", action: "Move Cursor", color: "blue" },
-              { gesture: "🤏 Pinch (Index + Thumb)", action: "Left Click", color: "green" },
-              { gesture: "🤏 Wide Pinch (Pinky + Thumb)", action: "Right Click", color: "purple" },
-              { gesture: "✌️ Two Fingers Up + Swipe", action: "Scroll", color: "amber" },
-              { gesture: "✋ Open Palm", action: "Pause Tracking", color: "red" },
-              { gesture: "✊ Fist", action: "Click & Drag", color: "indigo" },
+              { gesture: "☝️ Index Finger", action: "Move Cursor" },
+              { gesture: "🤏 Index + Thumb", action: "Left Click" },
+              { gesture: "🤌 Middle + Thumb", action: "Right Click" },
+              { gesture: "✌️ Peace Sign", action: "Scroll Up/Down" },
+              { gesture: "✋ Open Palm", action: "Pause / Resume" },
+              { gesture: "✨ Custom Pose", action: "Press 'R' to Record" },
             ].map((item, idx) => (
               <div key={idx} className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all">
                 <div className="text-3xl mb-3">{item.gesture.split(" ")[0]}</div>
