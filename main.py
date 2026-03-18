@@ -26,6 +26,8 @@ import numpy as np
 import time
 from collections import deque
 from enum import Enum, auto
+from gesture_utils import normalize_landmarks
+from gesture_registry import GestureRegistry
 
 # ── Safety ──────────────────────────────────────────────────────────
 pyautogui.FAILSAFE = True   # move mouse to corner to emergency-stop
@@ -79,6 +81,7 @@ class GState(Enum):
     DRAGGING    = auto()
     SCROLLING   = auto()
     PAUSED      = auto()
+    RECORDING   = auto()
 
 
 # ── Colour palette (BGR) ─────────────────────────────────────────────
@@ -212,6 +215,11 @@ def draw_hud(frame, state: GState, gesture_name: str, fps: float, smoothed_xy):
         sx, sy = int(smoothed_xy[0] * w), int(smoothed_xy[1] * h)
         cv2.drawMarker(frame, (sx, sy), C["blue"], cv2.MARKER_CROSS, 18, 2, cv2.LINE_AA)
 
+    # If recording, show countdown
+    if state == GState.RECORDING:
+        cv2.putText(frame, "RECORDING IN 3s...", (w//2 - 100, h//2),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1.0, C["red"], 3, cv2.LINE_AA)
+
 
 # ── Main loop ────────────────────────────────────────────────────────
 def run():
@@ -253,6 +261,9 @@ def run():
     last_click_ts      = 0.0   # for double-click detection
     pinch_hold_frames  = 0
     drag_active        = False
+    
+    registry = GestureRegistry()
+    recording_start_time = 0.0
 
     print("[GestureWave AI v2.0] — Starting. Press ESC in the camera window to exit.")
 
@@ -427,6 +438,15 @@ def run():
                     pyautogui.moveTo(prev_sx, prev_sy, _pause=False)
                     cv2.circle(frame, index_pt, 10, C["blue"], cv2.FILLED)
 
+                # ── Custom Gestures ────────────────────────────────
+                normalized = normalize_landmarks(lm)
+                custom_match, score = registry.recognize(normalized)
+                if custom_match and state == GState.MOVING:
+                    gesture_name = f"Custom: {custom_match}"
+                    # You could map specific names to specific actions here
+                    if custom_match == "Wave":
+                        pass # Trigger wave action
+
         else:
             # No hand detected — reset
             smoother.reset()
@@ -442,8 +462,25 @@ def run():
         draw_hud(frame, state, gesture_name, fps_counter.fps, smoothed_norm)
 
         cv2.imshow("GestureWave AI", frame)
-        if cv2.waitKey(1) & 0xFF == 27:   # ESC
+        key = cv2.waitKey(1) & 0xFF
+        if key == 27:   # ESC
             break
+        elif key == ord('r'): # Start recording
+            state = GState.RECORDING
+            recording_start_time = time.perf_counter()
+            print("[Gesture] Recording started...")
+
+        if state == GState.RECORDING:
+            elapsed = time.perf_counter() - recording_start_time
+            if elapsed > 3.0:
+                if result.multi_hand_landmarks:
+                    lm = result.multi_hand_landmarks[0].landmark
+                    normalized = normalize_landmarks(lm)
+                    g_name = f"Gesture_{len(registry.gestures) + 1}"
+                    registry.add_gesture(g_name, normalized)
+                    print(f"[Gesture] Saved as {g_name}")
+                    gesture_name = f"Saved {g_name}!"
+                state = GState.IDLE
 
     if drag_active:
         pyautogui.mouseUp()
