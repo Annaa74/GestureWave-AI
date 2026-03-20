@@ -199,7 +199,7 @@ export default function Home() {
         </motion.div>
 
         {/* ── Feature cards ──────────────────────────────────────── */}
-        <div className="grid md:grid-cols-3 gap-8 mb-24">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-24">
           {features.map((feature, idx) => (
             <motion.div
               key={idx}

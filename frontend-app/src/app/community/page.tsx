@@ -51,7 +51,7 @@ const changelog = [
 
 // ── Roadmap ───────────────────────────────────────────────────────────────────
 const roadmap = [
-  { icon: <Package className="w-5 h-5" />, title: "Windows Installer (.exe)", status: "In Progress", color: "amber" },
+  { icon: <Package className="w-5 h-5" />, title: "Windows Installer (.exe)", status: "Available", color: "green" },
   { icon: <Sparkles className="w-5 h-5" />, title: "Custom Gesture Macros", status: "Planned", color: "blue" },
   { icon: <Shield className="w-5 h-5" />, title: "Multi-hand Support", status: "Planned", color: "blue" },
   { icon: <Zap className="w-5 h-5" />, title: "Mobile Companion App (Android)", status: "Future", color: "violet" },
@@ -69,6 +69,7 @@ const typeLabel: Record<string, string> = {
 };
 
 const statusConfig: Record<string, { dot: string; badge: string }> = {
+  "Available":   { dot: "bg-green-400",  badge: "bg-green-50 text-green-700 border-green-200" },
   "In Progress": { dot: "bg-amber-400",  badge: "bg-amber-50 text-amber-700 border-amber-200" },
   "Planned":     { dot: "bg-blue-400",   badge: "bg-blue-50 text-blue-700 border-blue-200" },
   "Future":      { dot: "bg-violet-400", badge: "bg-violet-50 text-violet-700 border-violet-200" },

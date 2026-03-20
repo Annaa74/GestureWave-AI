@@ -26,10 +26,14 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile --noconsole --name GestureWaveAI main.py
+        pyinstaller --onefile --noconsole --name GestureWaveAI app.py
+
+    - name: Compile Inno Setup Script
+      run: |
+        iscc installer.iss
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: GestureWaveAI-Windows-Executable
-        path: dist/GestureWaveAI.exe
+        name: GestureWaveAI-Windows-Installer
+        path: dist/GestureWaveAI_Installer.exe
