@@ -9,7 +9,7 @@ opencv-python==4.13.0.92
 PyAutoGUI==0.9.54
 
 # Math / array processing
-numpy>=1.24.0
+numpy>=1.24.0,<2.0.0
 
 # Optional: GUI launcher
 # (tkinter ships with standard Python — no pip install needed)

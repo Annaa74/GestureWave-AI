@@ -35,17 +35,67 @@ SANS_B  = ("Segoe UI", 9, "bold")
 TITLE_F = ("Segoe UI", 11, "bold")
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-def clr_btn(parent, text, bg, fg, cmd, **kw):
-    return tk.Button(parent, text=text, bg=bg, fg=fg,
+def clr_btn(parent, text, bg, fg, cmd, tooltip=None, **kw):
+    btn = tk.Button(parent, text=text, bg=bg, fg=fg,
                      activebackground=bg, activeforeground=fg,
                      font=SANS_B, relief="flat", bd=0, cursor="hand2",
                      command=cmd, **kw)
+    if tooltip:
+        add_tooltip(btn, tooltip)
+    return btn
 
 def label(parent, text, font=SANS, fg=TEXT, bg=BG1, **kw):
     return tk.Label(parent, text=text, font=font, fg=fg, bg=bg, **kw)
 
 def sep(parent, bg=BORDER, pad=8):
     tk.Frame(parent, bg=bg, height=1).pack(fill="x", padx=20, pady=pad)
+
+class Tooltip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tw = None
+        self._id = None
+        self.widget.bind("<Enter>", self.enter)
+        self.widget.bind("<Leave>", self.leave)
+        self.widget.bind("<ButtonPress>", self.leave)
+
+    def enter(self, event=None):
+        self.unschedule()
+        self._id = self.widget.after(400, self.show)
+
+    def leave(self, event=None):
+        self.unschedule()
+        self.hide()
+
+    def unschedule(self):
+        if self._id:
+            self.widget.after_cancel(self._id)
+            self._id = None
+
+    def show(self, event=None):
+        self.hide()
+        x = self.widget.winfo_rootx() + (self.widget.winfo_width() // 2)
+        y = self.widget.winfo_rooty() + self.widget.winfo_height() + 4
+        self.tw = tk.Toplevel(self.widget)
+        self.tw.wm_overrideredirect(True)
+        # Fix for some window managers holding focus
+        self.tw.attributes("-topmost", True)
+        self.tw.wm_geometry(f"+{x}+{y}")
+        
+        lbl = tk.Label(self.tw, text=self.text, justify="left",
+                       bg=BG2, fg=TEXT, font=("Segoe UI", 8),
+                       relief="solid", bd=1, highlightbackground=BORDER)
+        lbl.pack(ipadx=6, ipady=3)
+
+    def hide(self):
+        if self.tw:
+            self.tw.destroy()
+            self.tw = None
+
+def add_tooltip(widget, text):
+    Tooltip(widget, text)
+
 
 # ── Log buffer ────────────────────────────────────────────────────────────────
 LOG_MAX = 120
@@ -136,11 +186,13 @@ class GestureWaveApp(tk.Tk):
         bf.pack(fill="x", padx=16, pady=10)
 
         self._btn_start = clr_btn(bf, "▶   Start Tracking", ACCENT, "white",
-                                   self._start, padx=24, pady=10)
+                                   self._start, tooltip="Initialize MediaPipe and start hand tracking",
+                                   padx=24, pady=10)
         self._btn_start.pack(side="left", fill="x", expand=True, padx=(0, 6))
 
         self._btn_stop = clr_btn(bf, "■  Stop", BG2, MUTED,
-                                   self._stop, padx=20, pady=10, state="disabled")
+                                   self._stop, tooltip="Stop hand tracking and release camera",
+                                   padx=20, pady=10, state="disabled")
         self._btn_stop.pack(side="right")
 
         # ── Notebook tabs ────────────────────────────────────────────────────
@@ -257,7 +309,8 @@ class GestureWaveApp(tk.Tk):
 
         sep(t, pad=6)
         apply_btn = clr_btn(t, "✓  Apply Settings", ACCENT, "white",
-                             self._apply_settings, padx=20, pady=8)
+                             self._apply_settings, tooltip="Save runtime settings (applies on next Start)",
+                             padx=20, pady=8)
         apply_btn.pack(anchor="w", padx=16, pady=(0, 8))
 
         label(t, "Settings take effect on next Start.", font=("Segoe UI", 8),
@@ -279,7 +332,7 @@ class GestureWaveApp(tk.Tk):
         toolbar = tk.Frame(t, bg=BG1)
         toolbar.pack(fill="x", padx=12, pady=(10, 4))
         label(toolbar, "LIVE LOG", font=("Segoe UI", 8, "bold"), fg=MUTED, bg=BG1).pack(side="left")
-        clr_btn(toolbar, "Clear", BG2, MUTED, self._clear_log,
+        clr_btn(toolbar, "Clear", BG2, MUTED, self._clear_log, tooltip="Wipe session logs history",
                 padx=10, pady=3).pack(side="right")
 
         self._log_txt = tk.Text(t, bg=BG2, fg="#a3e635", font=MONO,
