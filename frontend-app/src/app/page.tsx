@@ -95,7 +95,7 @@ export default function Home() {
                   Download for Windows
                 </button>
               </Link>
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+              <a href="https://github.com/Annaa74/GestureWave-AI" target="_blank" rel="noopener noreferrer">
                 <button className="px-8 py-3.5 rounded-full bg-white border border-gray-200 hover:bg-gray-50 font-medium transition-all flex items-center gap-2 text-gray-700">
                   <GitBranch className="w-4 h-4" />
                   View Source
