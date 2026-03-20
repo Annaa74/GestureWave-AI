@@ -24,6 +24,7 @@ import mediapipe as mp
 import pyautogui
 import numpy as np
 import time
+import webbrowser
 from collections import deque
 from enum import Enum, auto
 from gesture_utils import normalize_landmarks
@@ -62,6 +63,7 @@ class Cfg:
     SCROLL_COOLDOWN     = 0.08
     ZOOM_COOLDOWN       = 0.12
     PAUSE_COOLDOWN      = 1.20
+    CUSTOM_COOLDOWN     = 2.00
 
     # Open-palm pause: all 5 finger tips must be above their MCP joints
     PALM_OPEN_FINGERS   = 4     # out of 5
@@ -258,6 +260,7 @@ def run():
     last_scroll_time   = 0.0
     last_zoom_time     = 0.0
     last_pause_time    = 0.0
+    last_custom_time   = 0.0
     last_click_ts      = 0.0   # for double-click detection
     pinch_hold_frames  = 0
     drag_active        = False
@@ -443,9 +446,14 @@ def run():
                 custom_match, score = registry.recognize(normalized)
                 if custom_match and state == GState.MOVING:
                     gesture_name = f"Custom: {custom_match}"
-                    # You could map specific names to specific actions here
-                    if custom_match == "Wave":
-                        pass # Trigger wave action
+                    # Map specific custom gestures to actions (with a debounced cooldown)
+                    if now - last_custom_time > Cfg.CUSTOM_COOLDOWN:
+                        last_custom_time = now
+                        if custom_match == "Gesture_1":
+                            print("[GestureAction] Opening LinkedIn...")
+                            webbrowser.open("https://www.linkedin.com/")
+                            if hasattr(Cfg, 'STATUS_CB') and callable(Cfg.STATUS_CB):
+                                Cfg.STATUS_CB("Opened LinkedIn 🔗")
 
         else:
             # No hand detected — reset
