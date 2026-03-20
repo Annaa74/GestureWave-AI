@@ -1,4 +1,5 @@
 # GestureWave AI 🖐️
+![GestureWave Banner](assets/banner.png)
 ### Touch-Free Gesture Control System
 
 **GestureWave AI v2.1** is a real-time, touch-free hand gesture recognition engine that maps your hand movements to your PC cursor and actions using computer vision—no extra hardware required.
