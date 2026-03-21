@@ -89,7 +89,7 @@ export default function Home() {
               transition={{ delay: 0.3, duration: 0.5 }}
               className="flex flex-wrap items-center justify-center lg:justify-start gap-4"
             >
-              <Link href="/setup">
+              <Link href="https://github.com/Annaa74/GestureWave-AI/releases/latest/download/GestureWaveAI_Installer.exe">
                 <button className="px-8 py-3.5 rounded-full bg-black text-white font-semibold hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10 flex items-center gap-2">
                   <Download className="w-4 h-4" />
                   Download for Windows

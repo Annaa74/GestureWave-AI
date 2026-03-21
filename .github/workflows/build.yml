@@ -1,10 +1,15 @@
-name: Build executable
+name: Build & Release GestureWave AI
 
 on:
   push:
-    branches: [ "master", "main" ]
-  pull_request:
-    branches: [ "master", "main" ]
+    tags:
+      - 'v*' # Trigger on version tags (e.g., v2.1.0)
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -32,8 +37,19 @@ jobs:
       run: |
         iscc installer.iss
 
-    - name: Upload Artifact
+    - name: Upload Artifact (Backup)
       uses: actions/upload-artifact@v4
       with:
         name: GestureWaveAI-Windows-Installer
         path: dist/GestureWaveAI_Installer.exe
+
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v2
+      with:
+        files: dist/GestureWaveAI_Installer.exe
+        name: GestureWave AI ${{ github.ref_name }}
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
