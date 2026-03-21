@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "buildCommand": "cd frontend-app && npm run build",
+  "installCommand": "cd frontend-app && npm install",
+  "framework": "nextjs",
+  "public": false,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
+    }
+  ],
+  "cleanUrls": true
+}
