@@ -132,7 +132,6 @@ The core gesture loop relies on absolute tracking primitives. These are highly o
 | :--- | :--- | :--- |
 | **Move Cursor** | Index finger only | The cursor mimics the absolute 2D position of your index fingertip. |
 | **Left Click** | Thumb + Index pinch | Tap the tips of your thumb and index finger together quickly. |
-| **Drag and Drop** | Hold Thumb + Index pinch | Pinch items and keep your fingers held to drag. Release to drop. |
 | **Pause / Resume**| Open palm | Completely stops cursor snapping until the open palm is recognized again. |
 
 ### 🟡 Experimental Gestures

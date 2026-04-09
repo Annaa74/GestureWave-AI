@@ -225,10 +225,9 @@ class GestureWaveApp(tk.Tk):
         ("☝",  "Index finger",            "Move cursor",      ACCENT),
         ("🤏", "Index + Thumb pinch",      "Left click",       SUCCESS),
         ("⚡",  "Quick double pinch",      "Double click",     WARNING),
-        ("🤌", "Middle + Thumb pinch",     "Right click",      DANGER),
-        ("🤏→","Hold pinch + move",        "Drag & drop",      "#f59e0b"),
+        ("", "Three fingers up",         "Right click",      DANGER),
         ("✌",  "Peace sign up / down",    "Scroll",           "#06b6d4"),
-        ("🔍", "Two fingers spread",       "Zoom in / out",    "#8b5cf6"),
+        ("👍", "Thumbs up / down",         "Zoom in / out",    "#8b5cf6"),
         ("✋", "Open palm",               "Pause / Resume",   MUTED),
     ]
 
