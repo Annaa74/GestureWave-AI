@@ -16,32 +16,34 @@
 
 **GestureWave AI** is an advanced, touch-free gesture control engine that maps physical hand movements to digital desktop actions in real-time. By leveraging computer vision and machine learning models, it establishes a seamless, invisible interface between you and your computer—turning your webcam into a high-precision peripheral.
 
-Whether you are presenting to a large room, experimenting with spatial interfaces, or building accessible environments, GestureWave AI pushes the boundaries of human-computer interaction (HCI) using standard hardware.
+Whether you are presenting to a large room, looking for accessible computing alternatives, or building spatial interfaces, GestureWave AI pushes the boundaries of human-computer interaction (HCI) using standard hardware.
 
 ---
 
 ## ✨ Features
 
 - **Zero-Latency Tracking:** High-speed hand landmark detection optimized for standard CPU execution.
-- **Dynamic Spatial Mapping:** Translates 3D coordinates into precise 2D desktop cursor operations.
-- **Robust Feature Extraction:** Accurately calculates angles, distances, and pinches using built-in geometric utilities.
-- **Dual Runtime Interface:** Features a lightweight desktop launcher (`app.py`) for daily usage, and a dedicated engine script (`main.py`) for developers and debugging.
-- **Custom Gesture Engine:** Built-in capability to record, extract features, and register new multi-dimensional gestures on the fly.
+- **Dynamic Spatial Mapping:** Translates 3D coordinates into precise 2D desktop cursor operations with Exponential Moving Average (EMA) smoothing and dynamic velocity boosting.
+- **Strict Heuristic Classification:** Highly reliable gesture detection using strict physical constraints (e.g., inverted knuckles, specific finger folding) to eliminate false positives.
+- **Premium Desktop Launcher:** A lightweight, dark-mode Tkinter GUI (`app.py`) featuring live gesture logs, session timers, and real-time settings adjustments.
+- **Failsafe Integrated:** Built-in OS-level fail-safes (PyAutoGUI) to instantly regain control if needed.
 
 ---
 
-## 🛠️ Tech Stack
+##  Final Gesture Mapping
 
-This system is built entirely on a robust Python ecosystem specifically chosen for inference speed and operational stability.
+The gesture engine has been refined to prioritize stability and reliability. All gestures are mapped to exact physical hand shapes.
 
-| Technology      | Core Responsibility                           |
-|-----------------|-----------------------------------------------|
-| **Python**      | Primary application logic and state management|
-| **MediaPipe**   | Sub-millisecond hand tracking and topology    |
-| **OpenCV**      | Matrix manipulation and camera frame streaming|
-| **NumPy**       | Vector math and coordinate transformations    |
-| **PyAutoGUI**   | Operating-system-level simulated mouse control|
-| **Tkinter**     | Lightweight configuration and launcher UI     |
+| Action | Gesture | Description |
+| :--- | :--- | :--- |
+| **Move Cursor** | One finger (Pointer) | Point your index finger. The cursor mimics the absolute 2D position of your fingertip. |
+| **Left Click** | Quick Pinch | Tap the tips of your thumb and index finger together quickly. |
+| **Right Click** | Three Fingers Up | Extend your Index, Middle, and Ring fingers (Pinky folded down). |
+| **Double Click** | Two Quick Pinches | Perform two standard left-click pinches rapidly within 0.36 seconds. |
+| **Scroll Up/Down** | Peace Sign | Point index and middle fingers up. Move hand to the top half of the camera view to scroll up, or bottom half to scroll down. |
+| **Zoom In** | Thumbs Up | Closed fist with the thumb extended upwards. |
+| **Zoom Out** | Thumbs Down | Inverted closed fist with the thumb extended downwards. |
+| **Pause / Resume** | Open Palm | Raise an open hand (4+ fingers up) to pause or unpause tracking. |
 
 ---
 
@@ -54,13 +56,17 @@ GestureWave-AI/
 ├── app.py                 # Desktop launcher UI
 ├── main.py                # Core gesture engine runtime
 ├── core/
-│   └── config.py          # Global runtime configurations
+│   ├── config.py          # Global runtime configurations
+│   ├── gestures.py        # Landmark heuristics and classification logic
+│   └── actions.py         # PyAutoGUI OS action execution
+├── frontend-app/          # Next.js frontend showcase & documentation
+├── installer.iss          # Windows execution installer config (Inno Setup)
+├── assets/                # Visual assets, banners, and interface icons
+│
+└── Standalone Utilities (Not actively used by main app loop):
 ├── gesture_registry.py    # Custom gesture storage and matching logic
 ├── gesture_utils.py       # Landmark normalization and spatial helpers
-├── feature_extraction.py  # Advanced feature vector calculations
-├── frontend-app/          # Next.js frontend showcase & metrics dashboard
-├── installer.iss          # Windows execution installer config (Inno Setup)
-└── assets/                # Visual assets, banners, and interface icons
+└── feature_extraction.py  # Advanced feature vector calculations
 ```
 
 ---
