@@ -22,7 +22,7 @@ const milestones = [
   {
     year: "2024 Q4",
     title: "Open Source Release",
-    description: "GestureWave AI v1.0 released on GitHub. Community contributions begin. Scroll and drag support added.",
+    description: "GestureWave AI v1.0 released on GitHub. Community contributions begin. Scroll and double-click support added.",
   },
   {
     year: "2025",

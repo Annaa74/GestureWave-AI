@@ -30,7 +30,7 @@ const changelog = [
     entries: [
       { type: "feat", text: "EMA cursor smoothing + velocity-adaptive dampening" },
       { type: "feat", text: "Dead zone to eliminate tremor and micro-jitter" },
-      { type: "feat", text: "New: drag & drop, double click, peace-sign scroll, zoom, pause/resume" },
+      { type: "feat", text: "New: double click, peace-sign scroll, zoom, pause/resume" },
       { type: "feat", text: "Full gesture state machine with debouncing and per-gesture cooldowns" },
       { type: "feat", text: "On-screen HUD with FPS counter, gesture name, and state indicator" },
       { type: "improve", text: "Camera set to 1280×720 @ 30fps for better tracking accuracy" },

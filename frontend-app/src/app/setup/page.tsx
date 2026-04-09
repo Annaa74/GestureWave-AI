@@ -48,8 +48,8 @@ const gestureGuides = [
   {
     icon: <MousePointerClick className="w-6 h-6 text-indigo-600" />,
     gesture: "🤏 Index + Thumb",
-    action: "Left Click / Drag",
-    description: "Pinch index and thumb to click. Hold the pinch and move to drag windows or files.",
+    action: "Left Click",
+    description: "Pinch index and thumb to trigger a left click on your screen.",
     color: "bg-indigo-50 border-indigo-100"
   },
   {
