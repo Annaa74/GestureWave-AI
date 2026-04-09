@@ -1,259 +1,184 @@
-# GestureWave AI 🖐️  
-![GestureWave Banner](assets/banner.png)
+<div align="center">
+  <img src="assets/banner.png" alt="GestureWave AI Banner" width="100%" />
 
-## **Touch-Free Gesture Control System**
+  # GestureWave AI
+  **Real-Time, Touch-Free Gesture Control System**
 
-**GestureWave AI v2.1** is a real-time **computer-vision-based gesture control system** that allows users to interact with their PC using only a webcam and hand gestures — no extra sensors, gloves, or hardware required.
-
-It combines **MediaPipe hand tracking**, **OpenCV-based video processing**, and **PyAutoGUI desktop actions** to turn hand poses into live cursor movement and gesture-triggered actions.
-
----
-
-# **✨ Project Highlights**
-
-## **What GestureWave AI does**
-GestureWave AI detects and tracks hand landmarks in real time, interprets selected hand gestures, and maps them to desktop controls such as:
-
-- **Cursor movement**
-- **Left click**
-- **Right click**
-- **Double click**
-- **Drag and drop**
-- **Scroll**
-- **Zoom**
-- **Pause / resume tracking**
-
-It also includes a **desktop launcher GUI**, **custom gesture support**, and a **frontend showcase app**.
+  [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+  [![MediaPipe](https://img.shields.io/badge/MediaPipe-Enabled-orange.svg)](https://developers.google.com/mediapipe)
+  [![OpenCV](https://img.shields.io/badge/OpenCV-Computer_Vision-green.svg)](https://opencv.org/)
+  [![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+</div>
 
 ---
 
-# **🚀 Core Features**
+## 🌊 Overview
 
-## **1. Real-Time Hand Tracking**
-Uses **MediaPipe Hands** to detect and track a single hand in real time using a webcam feed.
+**GestureWave AI** is an advanced, touch-free gesture control engine that maps physical hand movements to digital desktop actions in real-time. By leveraging computer vision and machine learning models, it establishes a seamless, invisible interface between you and your computer—turning your webcam into a high-precision peripheral.
 
-## **2. Touch-Free Cursor Control**
-Maps hand motion to cursor movement with smoothing and motion filtering.
-
-## **3. Native Gesture Actions**
-Supports gesture-triggered desktop interactions such as:
-
-- ☝️ **Index finger only** → Move cursor  
-- 🤏 **Thumb + index pinch** → Left click  
-- 🤌 **Middle + thumb pinch** → Right click  
-- ⚡ **Quick repeated pinch** → Double click  
-- 🤏→ **Hold pinch + move** → Drag and drop  
-- ✌️ **Peace sign** → Scroll  
-- 🔍 **Two-finger spread** → Zoom in / out  
-- ✋ **Open palm** → Pause / resume tracking  
-
-## **4. Desktop Launcher**
-Includes a **Tkinter-based control dashboard** with:
-- status display
-- tracking controls
-- gesture reference
-- settings access
-- live interaction feedback
-
-## **5. Custom Gesture Recording**
-Users can press **`R`** during runtime to record and store custom gestures for later action mapping.
-
-## **6. Windows Packaging Support**
-Includes installer and deployment files for building a Windows executable workflow.
-
-## **7. Frontend Showcase**
-A **Next.js frontend** is included in the `frontend-app/` folder for product presentation and project showcase.
+Whether you are presenting to a large room, experimenting with spatial interfaces, or building accessible environments, GestureWave AI pushes the boundaries of human-computer interaction (HCI) using standard hardware.
 
 ---
 
-# **🛠️ Tech Stack**
+## ✨ Features
 
-## **AI / Vision**
-- **Python**
-- **MediaPipe**
-- **OpenCV**
-- **NumPy**
-
-## **Desktop Interaction**
-- **PyAutoGUI**
-- **Tkinter**
-
-## **Packaging / Automation**
-- **GitHub Actions**
-- **PyInstaller**
-- **Inno Setup**
-
-## **Frontend**
-- **Next.js**
-- **React**
-- **Tailwind CSS**
-- **Framer Motion**
+- **Zero-Latency Tracking:** High-speed hand landmark detection optimized for standard CPU execution.
+- **Dynamic Spatial Mapping:** Translates 3D coordinates into precise 2D desktop cursor operations.
+- **Robust Feature Extraction:** Accurately calculates angles, distances, and pinches using built-in geometric utilities.
+- **Dual Runtime Interface:** Features a lightweight desktop launcher (`app.py`) for daily usage, and a dedicated engine script (`main.py`) for developers and debugging.
+- **Custom Gesture Engine:** Built-in capability to record, extract features, and register new multi-dimensional gestures on the fly.
 
 ---
 
-# **📁 Project Structure**
+## 🛠️ Tech Stack
+
+This system is built entirely on a robust Python ecosystem specifically chosen for inference speed and operational stability.
+
+| Technology      | Core Responsibility                           |
+|-----------------|-----------------------------------------------|
+| **Python**      | Primary application logic and state management|
+| **MediaPipe**   | Sub-millisecond hand tracking and topology    |
+| **OpenCV**      | Matrix manipulation and camera frame streaming|
+| **NumPy**       | Vector math and coordinate transformations    |
+| **PyAutoGUI**   | Operating-system-level simulated mouse control|
+| **Tkinter**     | Lightweight configuration and launcher UI     |
+
+---
+
+## 🏗️ Project Structure
+
+The repository is highly modular, deeply separating the vision processing pipeline from operating system overrides.
 
 ```text
 GestureWave-AI/
 ├── app.py                 # Desktop launcher UI
-├── main.py                # Gesture engine runtime
+├── main.py                # Core gesture engine runtime
 ├── core/
-│   ├── __init__.py
-│   └── config.py          # Runtime configuration
-├── gesture_registry.py    # Custom gesture storage and matching
-├── gesture_utils.py       # Landmark normalization helpers
-├── feature_extraction.py  # Gesture feature utilities
-├── assets/                # Images, banner, visuals
-├── frontend-app/          # Next.js frontend showcase
-├── installer.iss          # Windows installer configuration
-├── requirements.txt       # Python dependencies
-└── README.md
-⚙️ Installation
-Prerequisites
+│   └── config.py          # Global runtime configurations
+├── gesture_registry.py    # Custom gesture storage and matching logic
+├── gesture_utils.py       # Landmark normalization and spatial helpers
+├── feature_extraction.py  # Advanced feature vector calculations
+├── frontend-app/          # Next.js frontend showcase & metrics dashboard
+├── installer.iss          # Windows execution installer config (Inno Setup)
+└── assets/                # Visual assets, banners, and interface icons
+```
 
-Before running the project, make sure you have:
+---
 
-Python 3.11 installed
-A working webcam
-Windows PowerShell or terminal access
-Internet connection for dependency installation
-Step 1 — Clone the Repository
-git clone https://github.com/Annaa74/GestureWave-AI.git
+## 🚀 Installation
+
+Getting GestureWave AI running locally only takes a few minutes. Follow the procedure below to configure your environment.
+
+> [!NOTE]  
+> **Prerequisites:** Ensure you have **Python 3.8+** installed and your operating system grants the terminal access to a working webcam.
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/YourUsername/GestureWave-AI.git
 cd GestureWave-AI
-Step 2 — Create a Virtual Environment
-Windows PowerShell
-py -3.11 -m venv venv
-.\venv\Scripts\Activate.ps1
+```
 
-After activation, your terminal should show something like:
+**2. Create a Virtual Environment**
+Generating an isolated environment ensures application stability and prevents dependency conflicts.
+```bash
+python -m venv venv
+```
 
-(venv) PS C:\path\to\GestureWave-AI>
-Step 3 — Install Dependencies
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+**3. Activate the Environment**
+- **Windows:**
+  ```bash
+  venv\Scripts\activate
+  ```
+- **macOS / Linux:**
+  ```bash
+  source venv/bin/activate
+  ```
 
-Note:
-If you face dependency conflicts related to NumPy or OpenCV, make sure the versions in requirements.txt match the project’s tested runtime setup.
+**4. Install Dependencies**
+```bash
+pip install -r requirements.txt
+```
 
-▶️ Running the Project
-Option 1 — Run the Desktop Launcher
+---
 
-Use this for the normal application flow:
+## 💻 Running the Project
 
+GestureWave AI has two distinct entry points, depending on if you want to use the application normally or debug the pipeline.
+
+> [!WARNING]  
+> **Important Runtime Note:** Do not run `app.py` and `main.py` simultaneously. Both files will attempt to lock your machine's primary camera stream, resulting in a system error or crash.
+
+### Normal Flow (Recommended)
+Use the UI launcher to securely boot the program. You can adjust your preferences via the interface.
+```bash
 python app.py
+```
+*Click **"Start Tracking"** inside the UI window to boot the tracking pipeline.*
 
-Then click Start Tracking from the launcher.
-
-Option 2 — Run the Gesture Engine Directly
-
-Use this if you want to test the camera tracking engine without the launcher UI:
-
+### Development Testing Flow
+Use this flow if you are testing modifications to the recognition engine. It bypasses the launcher completely.
+```bash
 python main.py
-❗ Important Runtime Note
+```
 
-Do not run app.py and main.py manually at the same time.
+---
 
-Use one of these flows:
+## 👋 Gesture Reference Guide
 
-Launcher Flow
-python app.py
+### 🟢 Stable Core Gestures
+The core gesture loop relies on absolute tracking primitives. These are highly optimized and stable across various lighting conditions.
 
-Then press Start Tracking
+| Intended Action | Physical Hand Shape | Description |
+| :--- | :--- | :--- |
+| **Move Cursor** | Index finger only | The cursor mimics the absolute 2D position of your index fingertip. |
+| **Left Click** | Thumb + Index pinch | Tap the tips of your thumb and index finger together quickly. |
+| **Drag and Drop** | Hold Thumb + Index pinch | Pinch items and keep your fingers held to drag. Release to drop. |
+| **Pause / Resume**| Open palm | Completely stops cursor snapping until the open palm is recognized again. |
 
-Engine-Only Flow
-python main.py
+### 🟡 Experimental Gestures
+These advanced gestures are available in the engine but may require threshold tuning in `core/config.py` depending on the focal length of your camera.
 
-Running both separately at once can cause:
+| Intended Action | Physical Hand Shape | Description |
+| :--- | :--- | :--- |
+| **Right Click** | Middle + Thumb pinch | Tap the tips of your middle finger and thumb together. |
+| **Double Click** | Quick repeated pinch | Perform a standard left-click pinch twice in rapid succession. |
+| **Scroll** | Peace sign | Point index and middle fingers up; move your hand vertically. |
+| **Zoom** | Two fingers spread | Expand the distance between your index and thumb horizontally. |
 
-camera conflicts
-duplicate tracking windows
-unstable behavior
-lower FPS
-🖐️ Gesture Reference
-Stable / Primary Gestures
+### ⌨️ Testing & Override Controls
+If you have the tracker window officially in focus, the following debug commands are active:
+- Press **`R`** to instantly snapshot and record a custom target gesture to the registry.
+- Press **`Esc`** to safely execute a shutdown and release the camera hook.
 
-These are the most important gestures to understand first:
+---
 
-Gesture	Action
-Index finger only	Move cursor
-Thumb + index pinch	Left click
-Hold thumb + index pinch	Drag and drop
-Open palm	Pause / resume tracking
-Additional Gestures Available
+## 🛑 Known Limitations
 
-These are supported in the project logic, though some may require extra tuning depending on environment and runtime conditions:
+- **Lighting Dependency:** Severe backlighting or ultra-low light can drastically reduce MediaPipe's confidence matrix.
+- **Occlusion Errors:** If the thumb is hidden behind the palm (relative to the camera), pinch thresholds may fail to fire.
 
-Gesture	Action
-Middle + thumb pinch	Right click
-Quick repeated pinch	Double click
-Peace sign	Scroll
-Two fingers spread	Zoom in / out
-Press R	Record custom gesture
-Press Esc	Exit tracking
-🧪 Recommended Testing Flow
+---
 
-For the best testing experience:
+## 🔮 Future Improvements
 
-1. Start simple
+- Implementation of dynamic smoothing filters (e.g., Euro filter mapping) to eliminate micro-jitter.
+- Upgraded multi-hand architecture to support complicated, two-handed chorded shortcuts.
+- Deep system tray integration logic for running entirely via background processes.
 
-First test only:
+---
 
-cursor movement
-left click
-drag
-2. Use a clean camera environment
+## 🏢 Use Cases
 
-For better tracking:
+- **Presentation Spaces:** Control digital slideshows naturally while standing significantly away from your laptop.
+- **Accessible Workstations:** Interact with standard UIs without requiring physical peripheral grips.
+- **Hands-Free Prototyping:** A baseline foundation capable of integration into smart-mirrors, interactive art, and shop-floor manufacturing terminals.
 
-keep the background simple
-avoid low light
-avoid strong backlight behind your hand
-3. Keep one hand in frame
+---
 
-The system is currently optimized for single-hand interaction.
+## 📄 License & Usage
 
-4. Test advanced gestures later
+Distributed under the MIT License. See `LICENSE` for more information.
 
-Only after movement and clicking feel stable should you test:
-
-right click
-scroll
-zoom
-custom gestures
-📌 Known Limitations
-
-GestureWave AI is functional, but still evolving. Current limitations may include:
-
-reduced accuracy in poor lighting
-lower FPS on weaker systems
-advanced gestures requiring more tuning than core gestures
-occasional gesture overlap depending on hand angle and distance from camera
-webcam quality affecting performance and stability
-📈 Future Improvements
-
-Planned improvements include:
-
-better gesture classification accuracy
-reduced false positives
-stronger debouncing and hysteresis logic
-persistent runtime settings
-cleaner modular architecture
-improved media control gesture support
-more stable custom gesture mapping
-💡 Use Cases
-
-GestureWave AI can be useful for:
-
-accessibility-focused input systems
-touch-free computer interaction demos
-gesture-based HCI experiments
-AI / CV project showcases
-desktop automation prototypes
-📜 License
-
-This project is licensed under the terms of the included LICENSE
-.
-
-🙌 Acknowledgment
-
-Built as a real-time hand-gesture interaction system using modern computer vision and desktop automation tools.
+<div align="center">
+  <i>Control space, not screens. Developed by the GestureWave AI Team.</i>
+</div>
