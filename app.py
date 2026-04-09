@@ -225,7 +225,7 @@ class GestureWaveApp(tk.Tk):
         ("☝",  "Index finger",            "Move cursor",      ACCENT),
         ("🤏", "Index + Thumb pinch",      "Left click",       SUCCESS),
         ("⚡",  "Quick double pinch",      "Double click",     WARNING),
-        ("", "Three fingers up",         "Right click",      DANGER),
+        ("🤟", "Three fingers up",         "Right click",      DANGER),
         ("✌",  "Peace sign up / down",    "Scroll",           "#06b6d4"),
         ("👍", "Thumbs up / down",         "Zoom in / out",    "#8b5cf6"),
         ("✋", "Open palm",               "Pause / Resume",   MUTED),
@@ -384,8 +384,7 @@ class GestureWaveApp(tk.Tk):
             self._status("Stopped", MUTED, "Press Start to begin a new session.")
 
     def _stop(self):
-        import cv2
-        cv2.destroyAllWindows()
+        engine.stop_flag = True
         self._log.add("Stop requested")
 
     def _reset_btns(self):
@@ -414,8 +413,7 @@ class GestureWaveApp(tk.Tk):
 
     # ── Exit ──────────────────────────────────────────────────────────────────
     def _quit(self):
-        import cv2
-        cv2.destroyAllWindows()
+        engine.stop_flag = True
         self.destroy()
 
 
