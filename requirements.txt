@@ -3,7 +3,7 @@
 
 # Core hand tracking
 mediapipe==0.10.5
-opencv-python==4.13.0.92
+opencv-python==4.8.1.78
 
 # Input simulation
 PyAutoGUI==0.9.54
