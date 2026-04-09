@@ -11,6 +11,8 @@ from core.config import Cfg
 from core.gestures import classify_gesture, GestureType, GestureConfig
 from core.actions import ActionExecutor
 
+stop_flag = False
+
 
 class GState(Enum):
     IDLE = auto()
@@ -224,57 +226,12 @@ def draw_hud(frame, state: GState, gesture_name: str, fps: float, smoothed_xy, t
         sx, sy = int(smoothed_xy[0] * w), int(smoothed_xy[1] * h)
         cv2.drawMarker(frame, (sx, sy), C["blue"], cv2.MARKER_CROSS, 18, 2, cv2.LINE_AA)
 
-    if training_mode:
-        overlay_train = frame.copy()
-        # Left stats panel
-        cv2.rectangle(overlay_train, (10, 50), (350, 260), (20, 20, 20), -1)
-        # Right guide panel
-        cv2.rectangle(overlay_train, (w - 280, 50), (w - 10, 260), (20, 20, 20), -1)
-        cv2.addWeighted(overlay_train, 0.7, frame, 0.3, 0, frame)
-        
-        y = 75
-        cv2.putText(frame, "[ TRAINING MODE ACTIVE ]", (20, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, C["yellow"], 2)
-        y += 25
-        
-        if gesture_result:
-            cv2.putText(frame, f"Raw: {gesture_result.gesture.name}", (20, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, C["white"], 1)
-            y += 20
-            cv2.putText(frame, f"L-Pinch: {gesture_result.left_pinch_distance:.1f} | R-Pinch: {gesture_result.right_pinch_distance:.1f}", (20, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, C["white"], 1)
-            y += 20
-            cv2.putText(frame, f"Up: I:{int(gesture_result.index_up)} M:{int(gesture_result.middle_up)} R:{int(gesture_result.ring_up)} P:{int(gesture_result.pinky_up)}", (20, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, C["white"], 1)
-            y += 25
-            
-        if executor and time.perf_counter() - executor.action_time < 1.5:
-            color = C["orange"] if "Blocked" in executor.simulated_action or "Stabilizing" in executor.simulated_action else C["green"]
-            cv2.putText(frame, f"Action: {executor.simulated_action}", (20, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
-            
-        # Double Click Window Tracing
-        dc_time_left = getattr(Cfg, 'DOUBLE_CLICK_WINDOW', 0.36) - (time.perf_counter() - last_left_click_release)
-        if dc_time_left > 0 and last_left_click_release > 0:
-            y += 25
-            cv2.putText(frame, f"D-Click Window Active: {dc_time_left:.2f}s", (20, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, C["yellow"], 1)
-
-        # Draw right guide
-        gy = 75
-        guide_texts = [
-            "GESTURE LEGEND:",
-            "Move: Index Up",
-            "L-Click: Index Pinch",
-            "R-Click: 3 Fingers Up",
-            "D-Click: 2x Index Pinch",
-            "Scroll: Peace + Move Up/Down",
-            "Zoom: Thumbs Up/Down",
-            "Pause: Open Palm"
-        ]
-        for text in guide_texts:
-            cv2.putText(frame, text, (w - 270, gy), cv2.FONT_HERSHEY_SIMPLEX, 0.45, C["white"], 1)
-            gy += 22
-            
-        if playground:
-            playground.draw(frame)
 
 
 def run():
+    global stop_flag
+    stop_flag = False
+
     cap = cv2.VideoCapture(Cfg.CAMERA_ID)
     if not cap.isOpened():
         print("[ERROR] Cannot open camera.")
@@ -295,8 +252,7 @@ def run():
     screen_w, screen_h = pyautogui.size()
     executor = ActionExecutor(
         safe_top_bar=Cfg.SAFE_TOP_BAR,
-        enable_click_actions=Cfg.ENABLE_CLICK_ACTIONS,
-        training_mode=getattr(Cfg, 'TRAINING_MODE', False)
+        enable_click_actions=Cfg.ENABLE_CLICK_ACTIONS
     )
 
     smoother = EMASmoother(Cfg.SMOOTH_ALPHA)
@@ -326,8 +282,6 @@ def run():
         palm_open_fingers=Cfg.PALM_OPEN_FINGERS,
         scroll_gap_max=Cfg.SCROLL_GAP_MAX,
     )
-    
-    playground = TrainingPlayground() if getattr(Cfg, 'TRAINING_MODE', False) else None
 
     print("[GestureWave AI Expanded Core] Starting. Press ESC to exit.")
 
@@ -337,9 +291,7 @@ def run():
             return now, new_state, active_name
         return last_time, GState.IDLE, ready_name
         
-    current_gesture_result = None
-
-    while True:
+    while not stop_flag:
         ok, frame = cap.read()
         if not ok:
             break
@@ -384,7 +336,6 @@ def run():
                 frame_height=fh,
                 config=g_config,
             )
-            current_gesture_result = gesture
 
             if gesture.gesture == last_gesture_type:
                 gesture_stable_frames += 1
@@ -402,16 +353,9 @@ def run():
                     else:
                         state = GState.PAUSED
                         gesture_name = "Paused ✋"
-                        
-            if playground:
-                if smoothed_norm:
-                    cx, cy = int(smoothed_norm[0] * fw), int(smoothed_norm[1] * fh)
-                else:
-                    cx, cy = None, None
-                playground.update(cx, cy, state, gesture_name)
 
             if state == GState.PAUSED:
-                draw_hud(frame, state, gesture_name, fps_counter.fps, smoothed_norm, getattr(Cfg, 'TRAINING_MODE', False), current_gesture_result, executor, last_left_click_release, playground)
+                draw_hud(frame, state, gesture_name, fps_counter.fps, smoothed_norm)
                 cv2.imshow("GestureWave AI", frame)
                 if cv2.waitKey(1) & 0xFF == 27:
                     break
@@ -430,11 +374,6 @@ def run():
                 else:
                     state = GState.IDLE
                     gesture_name = "Right Click Ready"
-                    if getattr(Cfg, 'TRAINING_MODE', False):
-                        if gesture_stable_frames < Cfg.ADVANCED_GESTURE_STABLE_FRAMES:
-                            executor._log_action(f"R-Click: Stabilizing ({gesture_stable_frames}/{Cfg.ADVANCED_GESTURE_STABLE_FRAMES})")
-                        else:
-                            executor._log_action("R-Click: Blocked (Cooldown)")
 
             # Left pinch
             elif gesture.gesture == GestureType.LEFT_PINCH:
@@ -483,9 +422,6 @@ def run():
                             last_left_click_release = now
                         
                         last_click_time = now
-                    else:
-                        if getattr(Cfg, 'TRAINING_MODE', False):
-                            executor._log_action("L-Click: Blocked (Jitter)")
                     state = GState.IDLE
 
                 if gesture.gesture == GestureType.MOVE:
@@ -503,9 +439,8 @@ def run():
             gesture_name = "No Hand"
             last_gesture_type = None
             gesture_stable_frames = 0
-            current_gesture_result = None
 
-        draw_hud(frame, state, gesture_name, fps_counter.fps, smoothed_norm, getattr(Cfg, 'TRAINING_MODE', False), current_gesture_result, executor, last_left_click_release, playground)
+        draw_hud(frame, state, gesture_name, fps_counter.fps, smoothed_norm)
 
         cv2.imshow("GestureWave AI", frame)
         key = cv2.waitKey(1) & 0xFF
