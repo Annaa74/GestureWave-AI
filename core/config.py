@@ -1,7 +1,4 @@
 class Cfg:
-    # Toggle to True to test gestures without executing OS clicks
-    TRAINING_MODE = True
-
     CAMERA_ID = 0
     FLIP_H = True
 

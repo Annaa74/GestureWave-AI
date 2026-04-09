@@ -85,9 +85,6 @@ def classify_gesture(
 
     index_up, middle_up, ring_up, pinky_up = finger_states(lm)
 
-    if is_open_palm(lm, config.palm_open_fingers):
-        return GestureResult(GestureType.PAUSE, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
-
     # Right click: three fingers up (index, middle, ring)
     if index_up and middle_up and ring_up and (not pinky_up):
         return GestureResult(GestureType.RIGHT_CLICK, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
@@ -104,14 +101,22 @@ def classify_gesture(
                 return GestureResult(GestureType.SCROLL_UP, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
             return GestureResult(GestureType.SCROLL_DOWN, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
 
-    # Zoom: thumbs up / down (fist + thumb extended)
+    # Zoom In: thumbs up (upright fist + thumb extended up)
     if (not index_up) and (not middle_up) and (not ring_up) and (not pinky_up):
         if lm[HL.THUMB_TIP].y < lm[HL.THUMB_MCP].y - 0.02:
             return GestureResult(GestureType.ZOOM_IN, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
-        elif lm[HL.THUMB_TIP].y > lm[HL.THUMB_MCP].y + 0.02:
-            return GestureResult(GestureType.ZOOM_OUT, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
+
+    # Zoom Out: thumbs down (inverted fist + thumb extended down)
+    if lm[HL.THUMB_TIP].y > lm[HL.THUMB_MCP].y + 0.04:
+        if lm[HL.INDEX_FINGER_MCP].y < lm[HL.INDEX_FINGER_PIP].y:
+            if index_up and middle_up:
+                return GestureResult(GestureType.ZOOM_OUT, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
 
     if is_index_only(lm) and left_pinch > config.pinch_release and right_pinch > config.pinch_release:
         return GestureResult(GestureType.MOVE, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
+
+    # Pause (Open Palm): Catch this last so it doesn't swallow strict inverted gestures
+    if is_open_palm(lm, config.palm_open_fingers):
+        return GestureResult(GestureType.PAUSE, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
 
     return GestureResult(GestureType.IDLE, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
