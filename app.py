@@ -127,7 +127,7 @@ class GestureWaveApp(tk.Tk):
         self._log       = GestureLog()
 
         # Live vars
-        self._alpha_var  = tk.DoubleVar(value=engine.Cfg.SMOOTH_ALPHA)
+        self._cutoff_var = tk.DoubleVar(value=engine.Cfg.EURO_MIN_CUTOFF)
         self._dead_var   = tk.IntVar  (value=engine.Cfg.DEAD_ZONE)
         self._thresh_var = tk.IntVar  (value=engine.Cfg.CLICK_THRESH)
         self._scroll_var = tk.IntVar  (value=engine.Cfg.SCROLL_AMOUNT)
@@ -287,7 +287,7 @@ class GestureWaveApp(tk.Tk):
                fg=MUTED, bg=BG1).pack(anchor="w", padx=16, pady=(14, 4))
 
         slider_row(t, "Cursor Smoothing  (lower = smoother, higher = faster)",
-                   self._alpha_var, 0.05, 1.0, "{:.2f}")
+                   self._cutoff_var, 0.05, 5.0, "{:.2f}")
         slider_row(t, "Dead Zone  (pixels — suppresses tremor)",
                    self._dead_var, 0, 20, "{:.0f}", 1)
         slider_row(t, "Click Sensitivity  (pinch distance threshold)",
@@ -317,12 +317,12 @@ class GestureWaveApp(tk.Tk):
                fg=MUTED, bg=BG1).pack(anchor="w", padx=16)
 
     def _apply_settings(self):
-        engine.Cfg.SMOOTH_ALPHA  = round(self._alpha_var.get(),  2)
-        engine.Cfg.DEAD_ZONE     = int(self._dead_var.get())
+        engine.Cfg.EURO_MIN_CUTOFF = round(self._cutoff_var.get(), 2)
+        engine.Cfg.DEAD_ZONE       = int(self._dead_var.get())
         engine.Cfg.CLICK_THRESH  = int(self._thresh_var.get())
         engine.Cfg.SCROLL_AMOUNT = int(self._scroll_var.get())
         engine.Cfg.CAMERA_ID     = int(self._cam_var.get())
-        self._log.add(f"Settings applied — alpha={engine.Cfg.SMOOTH_ALPHA}, "
+        self._log.add(f"Settings applied — min_cutoff={engine.Cfg.EURO_MIN_CUTOFF}, "
                       f"dead={engine.Cfg.DEAD_ZONE}px, thresh={engine.Cfg.CLICK_THRESH}")
         self._status("Settings applied ✓", "#22c55e", "Restart tracking to use new values.")
 

@@ -39,11 +39,9 @@ class Cfg:
     CAMERA_ID           = 0
     FLIP_H              = True
 
-    # Smoothing — EMA alpha (0 = max smooth/laggy, 1 = no smoothing)
-    SMOOTH_ALPHA        = 0.25
-    # Velocity boost: if cursor jumps far, temporarily raise alpha
-    VEL_BOOST_THRESHOLD = 60    # pixels/frame before boost kicks in
-    VEL_BOOST_ALPHA     = 0.55
+    # One Euro Filter parameters
+    EURO_MIN_CUTOFF     = 0.85
+    EURO_BETA           = 0.015
 
     # Dead zone: ignore movement smaller than N screen-pixels
     DEAD_ZONE           = 4
@@ -105,25 +103,66 @@ def dist(p1, p2):
     return np.hypot(p1[0] - p2[0], p1[1] - p2[1])
 
 
-# ── EMA smoother ─────────────────────────────────────────────────────
-class EMASmoother:
+# ── Low Pass Filter (Helper for One Euro) ─────────────────────────────
+class LowPassFilter:
     def __init__(self, alpha: float):
         self.alpha = alpha
-        self._x: float | None = None
-        self._y: float | None = None
+        self.y = None
 
-    def update(self, x: float, y: float, vel: float = 0) -> tuple[float, float]:
-        # Velocity-adaptive alpha
-        a = Cfg.VEL_BOOST_ALPHA if vel > Cfg.VEL_BOOST_THRESHOLD else self.alpha
-        if self._x is None:
-            self._x, self._y = x, y
+    def __call__(self, x: float):
+        if self.y is None:
+            self.y = x
         else:
-            self._x = a * x + (1 - a) * self._x
-            self._y = a * y + (1 - a) * self._y
-        return self._x, self._y
+            self.y = self.alpha * x + (1.0 - self.alpha) * self.y
+        return self.y
+
+
+# ── One Euro Filter ───────────────────────────────────────────────────
+class OneEuroFilter:
+    def __init__(self, min_cutoff=1.0, beta=0.0, d_cutoff=1.0):
+        self.min_cutoff = min_cutoff
+        self.beta = beta
+        self.d_cutoff = d_cutoff
+        self.x_filt = LowPassFilter(self._alpha(min_cutoff))
+        self.dx_filt = LowPassFilter(self._alpha(d_cutoff))
+        self.prev_x = None
+
+    def _alpha(self, cutoff, dt=1.0/30.0):
+        tau = 1.0 / (2 * np.pi * cutoff)
+        return 1.0 / (1.0 + tau / dt)
+
+    def __call__(self, x: float, dt=1.0/30.0):
+        if self.prev_x is None:
+            self.prev_x = x
+            dx = 0.0
+        else:
+            dx = (x - self.prev_x) / dt
+
+        edx = self.dx_filt(dx)
+        cutoff = self.min_cutoff + self.beta * abs(edx)
+        self.x_filt.alpha = self._alpha(cutoff, dt)
+        
+        self.prev_x = x
+        return self.x_filt(x)
 
     def reset(self):
-        self._x = self._y = None
+        self.x_filt.y = None
+        self.dx_filt.y = None
+        self.prev_x = None
+
+
+# ── 2D One Euro Filter (for Cursor) ──────────────────────────────────
+class OneEuroFilter2D:
+    def __init__(self, min_cutoff=0.8, beta=0.02):
+        self.x = OneEuroFilter(min_cutoff, beta)
+        self.y = OneEuroFilter(min_cutoff, beta)
+
+    def __call__(self, xy: tuple[float, float]):
+        return self.x(xy[0]), self.y(xy[1])
+
+    def reset(self):
+        self.x.reset()
+        self.y.reset()
 
 
 # ── FPS tracker ──────────────────────────────────────────────────────
@@ -245,7 +284,13 @@ def run():
 
     screen_w, screen_h = pyautogui.size()
 
-    smoother     = EMASmoother(Cfg.SMOOTH_ALPHA)
+    # Filters
+    cursor_filt = OneEuroFilter2D(min_cutoff=Cfg.EURO_MIN_CUTOFF, beta=Cfg.EURO_BETA)
+    d_left_filt = OneEuroFilter(min_cutoff=1.5,   beta=0.01)
+    d_right_filt= OneEuroFilter(min_cutoff=1.5,   beta=0.01)
+    d_zoom_filt = OneEuroFilter(min_cutoff=1.0,   beta=0.01)
+    index_y_filt= OneEuroFilter(min_cutoff=2.0,   beta=0.0) # Highly stable for scroll
+    
     fps_counter  = FPSCounter()
     zoom_tracker = ZoomTracker()
 
@@ -308,24 +353,23 @@ def run():
             ring_pt   = px(16)
             pinky_pt  = px(20)
 
-            # ── Distances ─────────────────────────────────────────
-            d_left   = dist(thumb_pt, index_pt)
-            d_right  = dist(thumb_pt, middle_pt)
-            d_scroll = dist(index_pt, middle_pt)
-            d_zoom   = dist(index_pt, middle_pt)  # also used for 2-finger zoom
+            # ── Distances (Smoothed) ──────────────────────────────
+            d_left   = d_left_filt(dist(thumb_pt, index_pt))
+            d_right  = d_right_filt(dist(thumb_pt, middle_pt))
+            d_scroll = dist(index_pt, middle_pt) # Scroll uses orientation mostly
+            d_zoom   = d_zoom_filt(dist(index_pt, middle_pt))
 
-            # ── Raw → smoothed screen coords ──────────────────────
+            # ── Smoothed screen coords ────────────────────────────
             raw_sx = (lm[8].x) * screen_w
             raw_sy = (lm[8].y) * screen_h
 
-            vel = dist((raw_sx, raw_sy), (prev_sx, prev_sy))
-            sm_sx, sm_sy = smoother.update(raw_sx, raw_sy, vel)
+            sm_sx, sm_sy = cursor_filt((raw_sx, raw_sy))
 
             # Dead zone suppression
             if dist((sm_sx, sm_sy), (prev_sx, prev_sy)) > Cfg.DEAD_ZONE:
                 prev_sx, prev_sy = sm_sx, sm_sy
 
-            smoothed_norm = (lm[8].x, lm[8].y)   # for HUD overlay
+            smoothed_norm = (prev_sx / screen_w, prev_sy / screen_h)
 
             now = time.perf_counter()
 
@@ -355,7 +399,8 @@ def run():
                 if now - last_scroll_time > Cfg.SCROLL_COOLDOWN:
                     last_scroll_time = now
                     state = GState.SCROLLING
-                    if lm[8].y < 0.45:
+                    sm_index_y = index_y_filt(lm[8].y)
+                    if sm_index_y < 0.45:
                         pyautogui.scroll(Cfg.SCROLL_AMOUNT)
                         gesture_name = "Scroll Up ✌"
                     else:
@@ -456,8 +501,12 @@ def run():
                                 Cfg.STATUS_CB("Opened LinkedIn 🔗")
 
         else:
-            # No hand detected — reset
-            smoother.reset()
+            # No hand detected — reset filters
+            cursor_filt.reset()
+            d_left_filt.reset()
+            d_right_filt.reset()
+            d_zoom_filt.reset()
+            index_y_filt.reset()
             zoom_tracker.reset()
             if drag_active:
                 pyautogui.mouseUp()
