@@ -16,3 +16,7 @@ numpy>=1.24.0,<2.0.0
 
 # Optional: packaging to .exe
 # pyinstaller>=6.0
+
+# Advanced hardware acceleration
+onnxruntime-directml>=1.16.0
+onnx>=1.14.0

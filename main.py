@@ -29,6 +29,8 @@ from collections import deque
 from enum import Enum, auto
 from gesture_utils import normalize_landmarks
 from gesture_registry import GestureRegistry
+from core.mediapipe_engine import MediaPipeEngine
+from core.onnx_engine import ONNXInferenceEngine
 
 # ── Safety ──────────────────────────────────────────────────────────
 pyautogui.FAILSAFE = True   # move mouse to corner to emergency-stop
@@ -200,6 +202,46 @@ def is_peace_sign(lm) -> bool:
     return index_up and middle_up and ring_down and pinky_down
 
 
+# ── Swipe sign detector ──────────────────────────────────────────────
+def is_swipe_gesture(lm) -> bool:
+    """Index, middle, and ring extended. Pinky curled, thumb relaxed."""
+    index_up  = lm[8].y  < lm[6].y
+    middle_up = lm[12].y < lm[10].y
+    ring_up   = lm[16].y < lm[14].y
+    pinky_down= lm[20].y > lm[18].y
+    return index_up and middle_up and ring_up and pinky_down
+
+
+# ── Swipe Tracker ────────────────────────────────────────────────────
+class SwipeTracker:
+    def __init__(self, buffer_size=6, threshold=0.18):
+        self._history = deque(maxlen=buffer_size)
+        self._threshold = threshold # normalized 0-1
+        self._cooldown = 0.7
+        self._last_time = 0
+
+    def update(self, x: float) -> str | None:
+        """Returns 'next', 'prev', or None."""
+        now = time.perf_counter()
+        self._history.append(x)
+        
+        if len(self._history) < self._history.maxlen:
+            return None
+        if now - self._last_time < self._cooldown:
+            return None
+
+        # Check for rapid displacement
+        delta = self._history[-1] - self._history[0]
+        if abs(delta) > self._threshold:
+            self._last_time = now
+            self._history.clear()
+            return "next" if delta < 0 else "prev"
+        return None
+
+    def reset(self):
+        self._history.clear()
+
+
 # ── Two-finger spread (zoom) ─────────────────────────────────────────
 class ZoomTracker:
     def __init__(self):
@@ -274,11 +316,10 @@ def run():
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     cap.set(cv2.CAP_PROP_FPS,          30)
 
-    hands = mp.solutions.hands.Hands(
-        max_num_hands=1,
-        min_detection_confidence=0.72,
-        min_tracking_confidence=0.60,
-    )
+    # Select Engine (Advanced: can be toggled to ONNX)
+    engine = MediaPipeEngine()
+    engine.initialize()
+
     draw_utils = mp.solutions.drawing_utils
     draw_style  = mp.solutions.drawing_styles
 
@@ -291,6 +332,7 @@ def run():
     d_zoom_filt = OneEuroFilter(min_cutoff=1.0,   beta=0.01)
     index_y_filt= OneEuroFilter(min_cutoff=2.0,   beta=0.0) # Highly stable for scroll
     
+    swipe_tracker = SwipeTracker()
     fps_counter  = FPSCounter()
     zoom_tracker = ZoomTracker()
 
@@ -324,14 +366,13 @@ def run():
             frame = cv2.flip(frame, 1)
 
         fh, fw = frame.shape[:2]
-        rgb    = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        result = hands.process(rgb)
         fps_counter.tick()
 
+        hand, rgb = engine.process_frame(frame)
+        
         smoothed_norm = None   # normalised (0-1) cursor position for HUD
 
-        if result.multi_hand_landmarks:
-            hand = result.multi_hand_landmarks[0]
+        if hand:
 
             # Draw landmarks with styled connections
             draw_utils.draw_landmarks(
@@ -408,6 +449,24 @@ def run():
                         gesture_name = "Scroll Down ✌"
                     cv2.circle(frame, index_pt,  16, C["green"], cv2.FILLED)
                     cv2.circle(frame, middle_pt, 16, C["green"], cv2.FILLED)
+
+            # ── Presentation Swipe (Three fingers) ────────────────
+            elif is_swipe_gesture(lm):
+                dir = swipe_tracker.update(lm[8].x)
+                if dir == "next":
+                    pyautogui.press("right")
+                    gesture_name = "Next Slide ➡"
+                    last_custom_time = now # Re-use for cooldown visuals
+                elif dir == "prev":
+                    pyautogui.press("left")
+                    gesture_name = "⬅ Previous Slide"
+                    last_custom_time = now
+                else:
+                    gesture_name = "Presentation Mode"
+                
+                # Visual ring for the three fingers
+                for pt in [index_pt, middle_pt, ring_pt]:
+                    cv2.circle(frame, pt, 14, C["blue"], 2)
 
             # ── Two-finger spread → zoom ──────────────────────────
             elif (lm[8].y < lm[6].y and lm[12].y < lm[10].y
@@ -507,6 +566,7 @@ def run():
             d_right_filt.reset()
             d_zoom_filt.reset()
             index_y_filt.reset()
+            swipe_tracker.reset()
             zoom_tracker.reset()
             if drag_active:
                 pyautogui.mouseUp()
@@ -542,6 +602,7 @@ def run():
     if drag_active:
         pyautogui.mouseUp()
     cap.release()
+    engine.release()
     cv2.destroyAllWindows()
     print("[GestureWave AI] Exited cleanly.")
 
