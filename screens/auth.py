@@ -58,3 +58,23 @@ class _OAuthHandler(http.server.BaseHTTPRequestHandler):
         html = (
             f'<html><body style="font-family:system-ui;background:#050510;color:#f1f5f9;'
             f'display:flex;justify-content:center;align-items:center;height:100vh;margin:0">'
+            f'<div style="background:#0d0d1a;border:1px solid #1e1e3a;border-radius:16px;'
+            f'padding:48px;text-align:center">'
+            f'<h2 style="color:{color};margin:0 0 8px">{msg}</h2>'
+            f'<p style="color:#64748b;margin:0">Return to GestureWave AI.</p>'
+            f'</div></body></html>'
+        )
+        self.wfile.write(html.encode("utf-8"))
+
+    def _serve_hash_extractor(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html")
+        self.send_header("Cache-Control", "no-cache, no-store")
+        self.end_headers()
+        html = (
+            '<!DOCTYPE html><html><head><meta charset="utf-8"><title>GestureWave AI</title></head>'
+            '<body style="font-family:system-ui;background:#050510;color:#f1f5f9;'
+            'display:flex;justify-content:center;align-items:center;height:100vh;margin:0">'
+            '<div style="background:#0d0d1a;border:1px solid #1e1e3a;border-radius:16px;'
+            'padding:48px;text-align:center;min-width:300px">'
+            '<p id="s" style="color:#64748b;margin:0">Completing authentication...</p></div>'
