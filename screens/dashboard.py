@@ -98,3 +98,23 @@ class Dashboard(tk.Frame):
 
         self._clock = tk.Label(right, text="00:00:00", font=MONO, fg=MUTED, bg=BG1)
         self._clock.pack()
+
+    def _build_actions(self):
+        bf = tk.Frame(self, bg=BG0); bf.pack(fill="x", padx=16, pady=8)
+        self._btn_start = clr_btn(bf, "▶  Start Tracking", ACCENT, "white", self._start, padx=24, pady=10)
+        self._btn_start.pack(side="left", fill="x", expand=True, padx=(0,6))
+        self._btn_stop = clr_btn(bf, "■  Stop", BG2, MUTED, self._stop, padx=20, pady=10)
+        self._btn_stop.config(state="disabled"); self._btn_stop.pack(side="right")
+
+    def _build_tabs(self):
+        s = ttk.Style(self)
+        s.theme_use("default")
+        s.configure("D.TNotebook", background=BG0, borderwidth=0)
+        s.configure("D.TNotebook.Tab", background=BG2, foreground=MUTED, font=SANS_B, padding=[14,6], borderwidth=0)
+        s.map("D.TNotebook.Tab", background=[("selected", BG1)], foreground=[("selected", TEXT)])
+
+        nb = ttk.Notebook(self, style="D.TNotebook")
+        nb.pack(fill="both", expand=True, padx=16, pady=(4,12))
+
+        t1 = tk.Frame(nb, bg=BG1); t2 = tk.Frame(nb, bg=BG1); t3 = tk.Frame(nb, bg=BG1)
+        nb.add(t1, text="  Gestures  "); nb.add(t2, text="  Settings  "); nb.add(t3, text="  Live Log  ")
