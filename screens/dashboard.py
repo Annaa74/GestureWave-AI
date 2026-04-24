@@ -18,3 +18,23 @@ class Dashboard(tk.Frame):
 
     def __init__(self, parent, engine, role, is_demo, on_logout, demo_gestures=None):
         super().__init__(parent, bg=BG0)
+        self.engine = engine
+        self.role = role
+        self.is_demo = is_demo
+        self.on_logout = on_logout
+        self.demo_gestures = demo_gestures or set()
+        self._running = False
+        self._log_lines = []
+        self._start_ts = 0
+        self._demo_start = 0
+        self._demo_dur = 300  # 5 min
+
+        # Tk variables
+        self._alpha = tk.DoubleVar(value=engine.Cfg.SMOOTH_ALPHA)
+        self._dead = tk.IntVar(value=engine.Cfg.DEAD_ZONE)
+        self._thresh = tk.IntVar(value=engine.Cfg.CLICK_THRESH)
+        self._scroll = tk.IntVar(value=engine.Cfg.SCROLL_AMOUNT)
+        self._cam = tk.IntVar(value=engine.Cfg.CAMERA_ID)
+
+        self._build()
+        self._tick()
