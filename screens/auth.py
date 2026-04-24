@@ -118,3 +118,23 @@ class AuthScreen(tk.Frame):
 
         # Logo
         tk.Label(center, text="~", font=("Segoe UI", 24, "bold"),
+                 fg=ACCENT, bg=BG0).pack(pady=(2, 0))
+        tk.Label(center, text="GestureWave AI", font=("Segoe UI", 16, "bold"),
+                 fg=TEXT, bg=BG0).pack(pady=(0, 6))
+
+        # Tab row
+        tf = tk.Frame(center, bg=BG0)
+        tf.pack(pady=(0, 6))
+        self._tab_si = clr_btn(tf, "Sign In", ACCENT, "white",
+                               lambda: self._switch("signin"),
+                               font=("Segoe UI", 10, "bold"), padx=24, pady=5)
+        self._tab_si.pack(side="left", padx=4)
+        self._tab_su = clr_btn(tf, "Sign Up", BG3, MUTED,
+                               lambda: self._switch("signup"),
+                               font=("Segoe UI", 10, "bold"), padx=24, pady=5)
+        self._tab_su.pack(side="left", padx=4)
+
+        # Card
+        card = tk.Frame(center, bg=BG1, highlightbackground=BORDER,
+                        highlightthickness=1)
+        card.pack(fill="both", expand=True)
