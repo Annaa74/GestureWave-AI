@@ -358,3 +358,23 @@ class AuthScreen(tk.Frame):
                     "provider": "google",
                     "options": {"redirect_to": OAUTH_REDIRECT}
                 })
+            except Exception as e:
+                err = str(e)
+                if "not enabled" in err.lower() or "unsupported" in err.lower():
+                    self.after(0, lambda: self._fail(
+                        "Google sign-in not enabled yet.\n"
+                        "Enable it in Supabase Dashboard > Auth > Providers > Google."))
+                else:
+                    self.after(0, lambda m=err: self._fail(f"Google OAuth: {m[:100]}"))
+                return
+
+            webbrowser.open(resp.url)
+
+            deadline = time.time() + 120
+            while server.auth_result is None and time.time() < deadline:
+                server.handle_request()
+
+            if server.auth_result:
+                result = server.auth_result
+                try:
+                    if result.get("type") == "pkce":
