@@ -278,3 +278,23 @@ class AuthScreen(tk.Frame):
             elif "fetch" in err.lower() or "connection" in err.lower():
                 msg = "Connection error. Check your internet."
             else:
+                msg = f"Error: {err[:150]}"
+            self.after(0, lambda m=msg: self._fail(m))
+
+    # ── Sign Up ──────────────────────────────────────────────────────────────
+    def _do_signup(self):
+        if not self.sb:
+            self._msg.config(text="Supabase not available.", fg=DANGER)
+            return
+        name = self._name_e.get().strip()
+        email = self._email_e.get().strip()
+        pw = self._pw_e.get().strip()
+        pw2 = self._pw2_e.get().strip()
+        if not name or not email or not pw:
+            self._msg.config(text="Please fill all fields.", fg=DANGER)
+            return
+        if len(pw) < 6:
+            self._msg.config(text="Password must be at least 6 characters.", fg=DANGER)
+            return
+        if pw != pw2:
+            self._msg.config(text="Passwords do not match.", fg=DANGER)
