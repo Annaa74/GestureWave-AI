@@ -218,3 +218,23 @@ class AuthScreen(tk.Frame):
         self._msg.pack(fill="x", pady=(4, 1))
         if not self.sb:
             self._msg.config(text="Supabase not configured. Check .env file.", fg=WARNING)
+
+        # Submit button
+        btn_text = "Create Account" if is_signup else "Sign In"
+        cmd = self._do_signup if is_signup else self._do_login
+        self._btn = clr_btn(self._form, btn_text, ACCENT, "white",
+                            cmd, font=FNT_BTN, padx=24, pady=8)
+        self._btn.pack(fill="x", pady=(2, 4))
+
+        # Enter key
+        entries = [self._email_e, self._pw_e]
+        if is_signup:
+            entries += [self._name_e, self._pw2_e]
+        for entry in entries:
+            entry.bind("<Return>", lambda e, c=cmd: c())
+
+        # Focus first field
+        first = self._name_e if is_signup else self._email_e
+        self.after(100, lambda: first.focus_set())
+
+    # ── Sign In ──────────────────────────────────────────────────────────────
