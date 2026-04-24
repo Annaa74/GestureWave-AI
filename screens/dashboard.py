@@ -218,3 +218,23 @@ class Dashboard(tk.Frame):
         self.engine.Cfg.DEAD_ZONE = int(self._dead.get())
         self.engine.Cfg.CLICK_THRESH = int(self._thresh.get())
         self.engine.Cfg.SCROLL_AMOUNT = int(self._scroll.get())
+        self.engine.Cfg.CAMERA_ID = int(self._cam.get())
+        self._log("Settings applied"); self._set_status("Settings ✓", SUCCESS, "Restart tracking to use")
+
+    def _set_status(self, title, color, sub=""):
+        self.after(0, lambda: (self._st_big.config(text=title), self._st_sub.config(text=sub), self._dot.config(fg=color)))
+
+    # ── Timer ──
+    def _tick(self):
+        if self._running:
+            e = int(time.perf_counter() - self._start_ts)
+            h, r = divmod(e, 3600); m, s = divmod(r, 60)
+            self._clock.config(text=f"{h:02}:{m:02}:{s:02}", fg=SUCCESS)
+        else:
+            self._clock.config(text=time.strftime("%H:%M:%S"), fg=MUTED)
+
+        if self.is_demo and self._demo_start:
+            left = max(0, self._demo_dur - (time.time() - self._demo_start))
+            mm, ss = divmod(int(left), 60)
+            self._timer_lbl.config(text=f"{mm:02}:{ss:02}")
+            if left <= 60: self._timer_lbl.config(fg=DANGER)
