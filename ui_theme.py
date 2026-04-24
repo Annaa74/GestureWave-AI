@@ -38,3 +38,16 @@ def lbl(parent, text, font=SANS, fg=TEXT, bg=BG1, **kw):
 
 class Tooltip:
     def __init__(self, w, text):
+        self.w, self.text, self.tw = w, text, None
+        w.bind("<Enter>", lambda e: w.after(400, self._show))
+        w.bind("<Leave>", lambda e: self._hide())
+    def _show(self):
+        self._hide()
+        x = self.w.winfo_rootx() + self.w.winfo_width()//2
+        y = self.w.winfo_rooty() + self.w.winfo_height() + 4
+        self.tw = tk.Toplevel(self.w); self.tw.wm_overrideredirect(True)
+        self.tw.attributes("-topmost", True); self.tw.wm_geometry(f"+{x}+{y}")
+        tk.Label(self.tw, text=self.text, bg=BG2, fg=TEXT, font=SANS_SM,
+                 relief="solid", bd=1).pack(ipadx=6, ipady=3)
+    def _hide(self):
+        if self.tw: self.tw.destroy(); self.tw = None
