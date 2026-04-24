@@ -158,3 +158,23 @@ class Dashboard(tk.Frame):
         tk.Frame(t, bg=BORDER, height=1).pack(fill="x", padx=20, pady=8)
         clr_btn(t, "✓  Apply Settings", ACCENT, "white", self._apply, padx=20, pady=8).pack(anchor="w", padx=16)
 
+    def _slider(self, parent, text, var, lo, hi, fmt):
+        f = tk.Frame(parent, bg=BG1); f.pack(fill="x", padx=16, pady=4)
+        h = tk.Frame(f, bg=BG1); h.pack(fill="x")
+        lbl(h, text, font=SANS_B, bg=BG1).pack(side="left")
+        vl = lbl(h, fmt.format(var.get()), font=MONO, fg=ACCENT, bg=BG1); vl.pack(side="right")
+        sc = ttk.Scale(f, from_=lo, to=hi, orient="horizontal", variable=var,
+                       command=lambda v: vl.config(text=fmt.format(float(v))))
+        sc.pack(fill="x", pady=(2,0))
+
+    def _build_logview(self, t):
+        tb = tk.Frame(t, bg=BG1); tb.pack(fill="x", padx=12, pady=(10,4))
+        lbl(tb, "LIVE LOG", font=("Segoe UI", 8, "bold"), fg=MUTED, bg=BG1).pack(side="left")
+        clr_btn(tb, "Clear", BG2, MUTED, self._clear_log, font=SANS_SM, padx=10, pady=3).pack(side="right")
+        self._log_txt = tk.Text(t, bg=BG2, fg="#a3e635", font=MONO, relief="flat", bd=0, state="disabled", wrap="word", cursor="arrow")
+        sb = tk.Scrollbar(t, command=self._log_txt.yview, bg=BG2, troughcolor=BG2, relief="flat", bd=0)
+        self._log_txt.configure(yscrollcommand=sb.set)
+        sb.pack(side="right", fill="y", padx=(0,4), pady=4)
+        self._log_txt.pack(fill="both", expand=True, padx=(12,0), pady=(0,8))
+
+    def _clear_log(self):
