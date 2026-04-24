@@ -298,3 +298,23 @@ class AuthScreen(tk.Frame):
             return
         if pw != pw2:
             self._msg.config(text="Passwords do not match.", fg=DANGER)
+            return
+        self._btn.config(text="Creating account...", state="disabled")
+        self._msg.config(text="")
+        threading.Thread(target=self._auth_signup, args=(email, pw, name), daemon=True).start()
+
+    def _auth_signup(self, email, pw, name):
+        try:
+            res = self.sb.auth.sign_up({
+                "email": email, "password": pw,
+                "options": {"data": {"display_name": name}}
+            })
+            if res.user and res.session:
+                # Signup with auto-confirm -> go straight to dashboard
+                self._load_user(res.user.id)
+            elif res.user:
+                # User created but no session -> try sign-in (auto-confirm trigger)
+                try:
+                    login = self.sb.auth.sign_in_with_password({
+                        "email": email, "password": pw
+                    })
