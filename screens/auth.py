@@ -318,3 +318,23 @@ class AuthScreen(tk.Frame):
                     login = self.sb.auth.sign_in_with_password({
                         "email": email, "password": pw
                     })
+                    if login.user and login.session:
+                        self._load_user(login.user.id)
+                        return
+                except Exception:
+                    pass
+                self.after(0, lambda: self._info("Account created! Sign in to continue."))
+            else:
+                self.after(0, lambda: self._fail("Signup failed. Try again."))
+        except Exception as e:
+            err = str(e)
+            if "already" in err.lower():
+                msg = "Email already registered. Use Sign In instead."
+            elif "rate limit" in err.lower():
+                msg = "Too many attempts. Wait a minute."
+            elif "invalid" in err.lower() and "email" in err.lower():
+                msg = "Please enter a valid email address."
+            else:
+                msg = f"Error: {err[:150]}"
+            self.after(0, lambda m=msg: self._fail(m))
+
