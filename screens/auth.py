@@ -158,3 +158,23 @@ class AuthScreen(tk.Frame):
     # ── Build Form ───────────────────────────────────────────────────────────
     def _build_form(self):
         for w in self._form.winfo_children():
+            w.destroy()
+        is_signup = self._mode == "signup"
+
+        FNT_LBL = ("Segoe UI Semibold", 10)
+        FNT_IN = ("Segoe UI", 11)
+        FNT_BTN = ("Segoe UI", 11, "bold")
+        IPAD = 5
+
+        # Google button
+        g = clr_btn(self._form, "  Continue with Google", "#ffffff", "#1a1a1a",
+                    self._do_google, font=("Segoe UI", 10, "bold"), padx=12, pady=7)
+        g.pack(fill="x", pady=(2, 4))
+
+        # Divider
+        df = tk.Frame(self._form, bg=BG1)
+        df.pack(fill="x", pady=(1, 4))
+        tk.Frame(df, bg=BORDER, height=1).pack(side="left", fill="x", expand=True)
+        tk.Label(df, text="  or  ", font=("Segoe UI", 10), fg=MUTED, bg=BG1).pack(side="left")
+        tk.Frame(df, bg=BORDER, height=1).pack(side="left", fill="x", expand=True)
+
