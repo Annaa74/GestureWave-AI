@@ -258,3 +258,23 @@ class AuthScreen(tk.Frame):
                 # Update sign-in count in gesturewave_users
                 try:
                     self.sb.table("gesturewave_users").update({
+                        "sign_in_count": res.user.user_metadata.get("sign_in_count", 1),
+                        "last_sign_in": "now()"
+                    }).eq("id", res.user.id).execute()
+                except Exception:
+                    pass
+                self._load_user(res.user.id)
+            else:
+                self.after(0, lambda: self._fail("Sign-in failed. Check credentials."))
+        except Exception as e:
+            err = str(e)
+            # Parse common errors into friendly messages
+            if "Invalid login" in err:
+                msg = "Invalid email or password."
+            elif "Email not confirmed" in err:
+                msg = "Email not confirmed. Check your inbox."
+            elif "rate limit" in err.lower():
+                msg = "Too many attempts. Wait a minute."
+            elif "fetch" in err.lower() or "connection" in err.lower():
+                msg = "Connection error. Check your internet."
+            else:
