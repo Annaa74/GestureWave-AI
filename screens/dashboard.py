@@ -178,3 +178,23 @@ class Dashboard(tk.Frame):
         self._log_txt.pack(fill="both", expand=True, padx=(12,0), pady=(0,8))
 
     def _clear_log(self):
+        self._log_lines.clear(); self._refresh_log()
+
+    def _refresh_log(self):
+        self._log_txt.config(state="normal"); self._log_txt.delete("1.0", "end")
+        self._log_txt.insert("end", "\n".join(reversed(self._log_lines)))
+        self._log_txt.config(state="disabled")
+
+    # ── Engine ──
+    def _start(self):
+        if self._running: return
+        self._running = True; self._start_ts = time.perf_counter()
+        self._btn_start.config(state="disabled")
+        self._btn_stop.config(state="normal", bg=DANGER, fg="white")
+        self._set_status("Starting…", ACCENT, "Opening camera…")
+        self._log("Tracking started")
+        self._eng_th = threading.Thread(target=self._worker, daemon=True)
+        self._eng_th.start()
+
+    def _worker(self):
+        try:
