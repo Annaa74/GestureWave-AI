@@ -198,3 +198,23 @@ class Dashboard(tk.Frame):
 
     def _worker(self):
         try:
+            self._set_status("Tracking", SUCCESS, "Hand detection running")
+            self.engine.run()
+        except Exception as e:
+            self._log(f"Error: {e}"); self._set_status("Error", DANGER, str(e))
+        finally:
+            self._running = False
+            self.after(0, lambda: (self._btn_start.config(state="normal"),
+                                    self._btn_stop.config(state="disabled", bg=BG2, fg=MUTED)))
+            self._log("Tracking stopped"); self._set_status("Stopped", MUTED, "Press Start again")
+
+    def _stop(self):
+        self.engine.stop_flag = True; self._log("Stop requested")
+
+    def _apply(self):
+        if self.role not in ("admin", "standard"):
+            messagebox.showwarning("Denied", "Sign in to change settings."); return
+        self.engine.Cfg.SMOOTH_ALPHA = round(self._alpha.get(), 2)
+        self.engine.Cfg.DEAD_ZONE = int(self._dead.get())
+        self.engine.Cfg.CLICK_THRESH = int(self._thresh.get())
+        self.engine.Cfg.SCROLL_AMOUNT = int(self._scroll.get())
