@@ -338,3 +338,23 @@ class AuthScreen(tk.Frame):
                 msg = f"Error: {err[:150]}"
             self.after(0, lambda m=msg: self._fail(m))
 
+    # ── Google OAuth ─────────────────────────────────────────────────────────
+    def _do_google(self):
+        if not self.sb:
+            self._msg.config(text="Supabase not available.", fg=DANGER)
+            return
+        self._msg.config(text="Opening browser...", fg=ACCENT)
+        threading.Thread(target=self._google_flow, daemon=True).start()
+
+    def _google_flow(self):
+        server = None
+        try:
+            server = http.server.HTTPServer(("127.0.0.1", OAUTH_PORT), _OAuthHandler)
+            server.auth_result = None
+            server.timeout = 10
+
+            try:
+                resp = self.sb.auth.sign_in_with_oauth({
+                    "provider": "google",
+                    "options": {"redirect_to": OAUTH_REDIRECT}
+                })
