@@ -378,3 +378,23 @@ class AuthScreen(tk.Frame):
                 result = server.auth_result
                 try:
                     if result.get("type") == "pkce":
+                        self.sb.auth.exchange_code_for_session({"auth_code": result["code"]})
+                    elif result.get("type") == "token":
+                        self.sb.auth.set_session(result["access_token"], result["refresh_token"])
+
+                    user = self.sb.auth.get_user()
+                    if user and user.user:
+                        self._load_user(user.user.id)
+                    else:
+                        self.after(0, lambda: self._fail("Could not get user after Google auth."))
+                except Exception as e:
+                    self.after(0, lambda m=str(e): self._fail(f"Google auth: {m[:100]}"))
+            else:
+                self.after(0, lambda: self._fail("Google sign-in timed out. Try again."))
+
+        except OSError as e:
+            if "10048" in str(e) or "Address already in use" in str(e):
+                self.after(0, lambda: self._fail("Port busy. Close other instances."))
+            else:
+                self.after(0, lambda m=str(e): self._fail(m))
+        except Exception as e:
