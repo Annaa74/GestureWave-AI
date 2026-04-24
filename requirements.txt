@@ -11,6 +11,10 @@ PyAutoGUI==0.9.54
 # Math / array processing
 numpy>=1.24.0,<2.0.0
 
+# Database & Auth
+supabase>=2.0.0
+python-dotenv>=1.0.0
+
 # Optional: GUI launcher
 # (tkinter ships with standard Python — no pip install needed)
 
