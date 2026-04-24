@@ -78,3 +78,23 @@ class _OAuthHandler(http.server.BaseHTTPRequestHandler):
             '<div style="background:#0d0d1a;border:1px solid #1e1e3a;border-radius:16px;'
             'padding:48px;text-align:center;min-width:300px">'
             '<p id="s" style="color:#64748b;margin:0">Completing authentication...</p></div>'
+            '<script>(function(){var a=0;function t(){a++;var h=window.location.hash;'
+            'if(h&&h.length>1){window.location.replace("/auth/tokens?"+h.substring(1));return;}'
+            'if(a<30){setTimeout(t,100);}else{'
+            'document.getElementById("s").innerHTML="<span style=color:#ef4444>No token received.</span>";'
+            '}}setTimeout(t,50);})();</script></body></html>'
+        )
+        self.wfile.write(html.encode("utf-8"))
+
+    def log_message(self, *a):
+        pass
+
+
+# ── Auth Screen ──────────────────────────────────────────────────────────────
+
+class AuthScreen(tk.Frame):
+    """Full-width auth screen — no scrolling, fills entire window."""
+
+    def __init__(self, parent, supabase_client, supabase_error, on_success, on_back):
+        super().__init__(parent, bg=BG0)
+        self.sb = supabase_client
