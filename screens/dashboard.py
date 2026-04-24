@@ -118,3 +118,23 @@ class Dashboard(tk.Frame):
 
         t1 = tk.Frame(nb, bg=BG1); t2 = tk.Frame(nb, bg=BG1); t3 = tk.Frame(nb, bg=BG1)
         nb.add(t1, text="  Gestures  "); nb.add(t2, text="  Settings  "); nb.add(t3, text="  Live Log  ")
+        self._build_gestures(t1); self._build_settings(t2); self._build_logview(t3)
+
+    def _build_gestures(self, t):
+        lbl(t, "GESTURE REFERENCE", font=("Segoe UI", 8, "bold"), fg=MUTED, bg=BG1).pack(anchor="w", padx=16, pady=(12,6))
+        for emoji, name, action, color in self.GESTURES:
+            locked = self.is_demo and name not in ("Index Finger Up", "Thumb + Index Pinch")
+            row = tk.Frame(t, bg=BG2 if not locked else BG0)
+            row.pack(fill="x", padx=12, pady=2); row.pack_propagate(False); row.configure(height=36)
+            fg_c = MUTED if locked else TEXT
+            tk.Label(row, text=emoji, font=("Segoe UI", 13), bg=row["bg"], width=3).pack(side="left", padx=(8,4))
+            tk.Label(row, text=name, font=SANS_B, fg=fg_c, bg=row["bg"], anchor="w", width=22).pack(side="left")
+            if locked:
+                tk.Label(row, text="🔒", font=SANS_SM, fg=MUTED, bg=row["bg"]).pack(side="right", padx=8)
+            else:
+                tk.Label(row, text=action, font=SANS, fg=color, bg=row["bg"], anchor="e").pack(side="right", padx=10)
+
+        tip = tk.Frame(t, bg=BG1); tip.pack(fill="x", padx=12, pady=(8,0))
+        lbl(tip, "💡 Move cursor to screen corner for emergency stop | ESC to exit camera", font=("Segoe UI", 8), fg=MUTED, bg=BG1).pack(anchor="w", padx=4)
+
+    def _build_settings(self, t):
