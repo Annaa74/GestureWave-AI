@@ -398,3 +398,23 @@ class AuthScreen(tk.Frame):
             else:
                 self.after(0, lambda m=str(e): self._fail(m))
         except Exception as e:
+            self.after(0, lambda m=str(e): self._fail(f"Google auth error: {m[:100]}"))
+        finally:
+            if server:
+                try:
+                    server.server_close()
+                except Exception:
+                    pass
+
+    # ── Load user -> dashboard ───────────────────────────────────────────────
+    def _load_user(self, uid):
+        role = "standard"
+        settings = []
+        permissions = []
+
+        try:
+            p = self.sb.table("profiles").select("role").eq("id", uid).execute()
+            role = p.data[0]["role"] if p.data else "standard"
+        except Exception:
+            pass
+
