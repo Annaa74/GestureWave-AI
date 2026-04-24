@@ -38,3 +38,23 @@ class _OAuthHandler(http.server.BaseHTTPRequestHandler):
                 self._serve_hash_extractor()
         elif parsed.path == "/auth/tokens":
             if "access_token" in params:
+                self.server.auth_result = {
+                    "type": "token",
+                    "access_token": params["access_token"][0],
+                    "refresh_token": params.get("refresh_token", [""])[0],
+                }
+                self._respond(200, "Authenticated! You can close this tab.")
+            else:
+                self._respond(200, "No token received. Try again.")
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def _respond(self, code, msg):
+        self.send_response(code)
+        self.send_header("Content-Type", "text/html")
+        self.end_headers()
+        color = "#10b981" if "Authenticated" in msg else "#ef4444"
+        html = (
+            f'<html><body style="font-family:system-ui;background:#050510;color:#f1f5f9;'
+            f'display:flex;justify-content:center;align-items:center;height:100vh;margin:0">'
