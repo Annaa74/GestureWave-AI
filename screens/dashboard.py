@@ -38,3 +38,23 @@ class Dashboard(tk.Frame):
 
         self._build()
         self._tick()
+        if is_demo:
+            self._demo_start = time.time()
+
+    def _log(self, msg):
+        ts = time.strftime("%H:%M:%S")
+        self._log_lines.append(f"[{ts}] {msg}")
+        if len(self._log_lines) > 100:
+            self._log_lines.pop(0)
+
+    # ── Build ──
+    def _build(self):
+        self._build_header()
+        self._build_status()
+        self._build_actions()
+        self._build_tabs()
+
+    def _build_header(self):
+        hdr = tk.Frame(self, bg=BG1, height=56)
+        hdr.pack(fill="x"); hdr.pack_propagate(False)
+
