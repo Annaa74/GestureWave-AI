@@ -438,3 +438,15 @@ class AuthScreen(tk.Frame):
         txt = "Create Account" if self._mode == "signup" else "Sign In"
         try:
             self._btn.config(text=txt, state="normal")
+            self._msg.config(text=msg, fg=DANGER)
+        except Exception:
+            pass
+
+    def _info(self, msg):
+        try:
+            btn_txt = "Create Account" if self._mode == "signup" else "Sign In"
+            self._btn.config(text=btn_txt, state="normal")
+            self._msg.config(text=msg, fg=SUCCESS)
+            self.after(2000, lambda: self._switch("signin"))
+        except Exception:
+            pass
