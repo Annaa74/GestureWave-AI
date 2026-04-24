@@ -25,7 +25,9 @@ Whether you are presenting to a large room, looking for accessible computing alt
 - **Zero-Latency Tracking:** High-speed hand landmark detection optimized for standard CPU execution.
 - **Dynamic Spatial Mapping:** Translates 3D coordinates into precise 2D desktop cursor operations with Exponential Moving Average (EMA) smoothing and dynamic velocity boosting.
 - **Strict Heuristic Classification:** Highly reliable gesture detection using strict physical constraints (e.g., inverted knuckles, specific finger folding) to eliminate false positives.
-- **Premium Desktop Launcher:** A lightweight, dark-mode Tkinter GUI (`app.py`) featuring live gesture logs, session timers, and real-time settings adjustments.
+- **Premium Desktop UI:** A highly refined, fixed-resolution (720x820) dark-mode Tkinter GUI (`app.py`) featuring an optimized non-scrolling authentication flow and interactive dashboard.
+- **Robust Authentication:** Full integration with Supabase for Email/Password and Google OAuth authentication (with local PKCE redirect support).
+- **Persistent Profiles:** Custom database triggers (`gesturewave_users`) automatically track user sessions, login counts, and metadata.
 - **Failsafe Integrated:** Built-in OS-level fail-safes (PyAutoGUI) to instantly regain control if needed.
 
 ---
@@ -53,12 +55,17 @@ The repository is highly modular, deeply separating the vision processing pipeli
 
 ```text
 GestureWave-AI/
-├── app.py                 # Desktop launcher UI
+├── app.py                 # Desktop launcher UI & Route Manager
 ├── main.py                # Core gesture engine runtime
 ├── core/
 │   ├── config.py          # Global runtime configurations
 │   ├── gestures.py        # Landmark heuristics and classification logic
 │   └── actions.py         # PyAutoGUI OS action execution
+├── screens/               # Modular UI components
+│   ├── welcome.py         # Landing and Demo initialization
+│   ├── auth.py            # Optimized Sign-In / Sign-Up / Google OAuth UI
+│   └── dashboard.py       # User control panel and live camera host
+├── ui_theme.py            # Global styling, colors, and layout constants
 ├── frontend-app/          # Next.js frontend showcase & documentation
 ├── installer.iss          # Windows execution installer config (Inno Setup)
 ├── assets/                # Visual assets, banners, and interface icons
@@ -103,6 +110,13 @@ python -m venv venv
 **4. Install Dependencies**
 ```bash
 pip install -r requirements.txt
+```
+
+**5. Environment Configuration**
+Create a `.env` file in the root directory to connect your Supabase backend:
+```env
+SUPABASE_URL=your_project_url
+SUPABASE_ANON_KEY=your_anon_key
 ```
 
 ---
