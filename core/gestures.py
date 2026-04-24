@@ -107,10 +107,9 @@ def classify_gesture(
             return GestureResult(GestureType.ZOOM_IN, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
 
     # Zoom Out: thumbs down (inverted fist + thumb extended down)
-    if lm[HL.THUMB_TIP].y > lm[HL.THUMB_MCP].y + 0.04:
-        if lm[HL.INDEX_FINGER_MCP].y < lm[HL.INDEX_FINGER_PIP].y:
-            if index_up and middle_up:
-                return GestureResult(GestureType.ZOOM_OUT, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
+    if (not index_up) and (not middle_up) and (not ring_up) and (not pinky_up):
+        if lm[HL.THUMB_TIP].y > lm[HL.THUMB_MCP].y + 0.02:
+            return GestureResult(GestureType.ZOOM_OUT, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
 
     if is_index_only(lm) and left_pinch > config.pinch_release and right_pinch > config.pinch_release:
         return GestureResult(GestureType.MOVE, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
