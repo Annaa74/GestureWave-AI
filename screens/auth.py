@@ -138,3 +138,23 @@ class AuthScreen(tk.Frame):
         card = tk.Frame(center, bg=BG1, highlightbackground=BORDER,
                         highlightthickness=1)
         card.pack(fill="both", expand=True)
+
+        # Form inside card
+        self._form = tk.Frame(card, bg=BG1)
+        self._form.pack(fill="both", expand=True, padx=50, pady=12)
+
+        self._build_form()
+
+    def _switch(self, mode):
+        self._mode = mode
+        if mode == "signin":
+            self._tab_si.config(bg=ACCENT, fg="white")
+            self._tab_su.config(bg=BG3, fg=MUTED)
+        else:
+            self._tab_si.config(bg=BG3, fg=MUTED)
+            self._tab_su.config(bg=ACCENT, fg="white")
+        self._build_form()
+
+    # ── Build Form ───────────────────────────────────────────────────────────
+    def _build_form(self):
+        for w in self._form.winfo_children():
