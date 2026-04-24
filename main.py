@@ -271,6 +271,9 @@ def run():
     last_right_click_time = 0.0
     last_left_click_release = 0.0
 
+    freeze_start = 0.0
+    freeze_duration = 0.0
+
     # Stability tracking for advanced gestures
     last_gesture_type = None
     gesture_stable_frames = 0
@@ -330,6 +333,21 @@ def run():
             smoothed_norm = (lm[8].x, lm[8].y)
             now = time.perf_counter()
 
+            if now - freeze_start < freeze_duration:
+                remaining = freeze_duration - (now - freeze_start)
+                gesture_name = f"Frozen ({remaining:.1f}s)"
+                state = GState.PAUSED
+                draw_hud(frame, state, gesture_name, fps_counter.fps, smoothed_norm)
+                
+                # Draw cooldown bar at HUD (y=40 to 44)
+                bar_w = int((remaining / freeze_duration) * fw)
+                cv2.rectangle(frame, (0, 40), (bar_w, 44), C["orange"], -1)
+                
+                cv2.imshow("GestureWave AI", frame)
+                if cv2.waitKey(1) & 0xFF == 27:
+                    break
+                continue
+
             gesture = classify_gesture(
                 lm=lm,
                 frame_width=fw,
@@ -345,14 +363,18 @@ def run():
 
             # Pause / resume
             if gesture.gesture == GestureType.PAUSE:
-                if now - last_pause_time > Cfg.PAUSE_COOLDOWN:
-                    last_pause_time = now
-                    if state == GState.PAUSED:
-                        state = GState.IDLE
-                        gesture_name = "Resumed"
-                    else:
-                        state = GState.PAUSED
-                        gesture_name = "Paused ✋"
+                if "PAUSE" in Cfg.ALLOWED_GESTURES:
+                    if now - last_pause_time > Cfg.PAUSE_COOLDOWN:
+                        last_pause_time = now
+                        if state == GState.PAUSED:
+                            state = GState.IDLE
+                            gesture_name = "Resumed"
+                        else:
+                            state = GState.PAUSED
+                            gesture_name = "Paused ✋"
+                else:
+                    state = GState.IDLE
+                    gesture_name = "Pause (Restricted)"
 
             if state == GState.PAUSED:
                 draw_hud(frame, state, gesture_name, fps_counter.fps, smoothed_norm)
@@ -363,71 +385,101 @@ def run():
 
             # Right click
             if gesture.gesture == GestureType.RIGHT_CLICK:
-                if (
-                    gesture_stable_frames >= Cfg.ADVANCED_GESTURE_STABLE_FRAMES
-                    and now - last_right_click_time > Cfg.CLICK_COOLDOWN
-                ):
-                    last_right_click_time = now
-                    executor.right_click(prev_sx, prev_sy)
-                    state = GState.PINCHING
-                    gesture_name = "Right Click 🤟"
+                if "RIGHT_CLICK" in Cfg.ALLOWED_GESTURES:
+                    if (
+                        gesture_stable_frames >= Cfg.ADVANCED_GESTURE_STABLE_FRAMES
+                        and now - last_right_click_time > Cfg.CLICK_COOLDOWN
+                    ):
+                        last_right_click_time = now
+                        executor.right_click(prev_sx, prev_sy)
+                        state = GState.PINCHING
+                        gesture_name = "Right Click 🤟"
+                        freeze_start = now
+                        freeze_duration = Cfg.RIGHT_CLICK_FREEZE
+                    else:
+                        state = GState.IDLE
+                        gesture_name = "Right Click Ready"
                 else:
                     state = GState.IDLE
-                    gesture_name = "Right Click Ready"
+                    gesture_name = "R-Click (Restricted)"
 
             # Left pinch
             elif gesture.gesture == GestureType.LEFT_PINCH:
-                state = GState.PINCHING
-                gesture_name = "Pinching 🤏"
+                if "LEFT_PINCH" in Cfg.ALLOWED_GESTURES:
+                    state = GState.PINCHING
+                    gesture_name = "Pinching 🤏"
+                else:
+                    state = GState.IDLE
+                    gesture_name = "Pinch (Restricted)"
 
             # Scroll
             elif gesture.gesture == GestureType.SCROLL_UP:
-                last_scroll_time, state, gesture_name = handle_advanced(
-                    last_scroll_time, Cfg.SCROLL_COOLDOWN, executor.scroll_up, (Cfg.SCROLL_AMOUNT,),
-                    GState.SCROLLING, "Scroll Up ✌", "Scroll Ready"
-                )
+                if "SCROLL_UP" in Cfg.ALLOWED_GESTURES:
+                    last_scroll_time, state, gesture_name = handle_advanced(
+                        last_scroll_time, Cfg.SCROLL_COOLDOWN, executor.scroll_up, (Cfg.SCROLL_AMOUNT,),
+                        GState.SCROLLING, "Scroll Up ✌", "Scroll Ready"
+                    )
 
             elif gesture.gesture == GestureType.SCROLL_DOWN:
-                last_scroll_time, state, gesture_name = handle_advanced(
-                    last_scroll_time, Cfg.SCROLL_COOLDOWN, executor.scroll_down, (Cfg.SCROLL_AMOUNT,),
-                    GState.SCROLLING, "Scroll Down ✌", "Scroll Ready"
-                )
+                if "SCROLL_DOWN" in Cfg.ALLOWED_GESTURES:
+                    last_scroll_time, state, gesture_name = handle_advanced(
+                        last_scroll_time, Cfg.SCROLL_COOLDOWN, executor.scroll_down, (Cfg.SCROLL_AMOUNT,),
+                        GState.SCROLLING, "Scroll Down ✌", "Scroll Ready"
+                    )
 
             # Zoom
             elif gesture.gesture == GestureType.ZOOM_IN:
-                last_zoom_time, state, gesture_name = handle_advanced(
-                    last_zoom_time, Cfg.ZOOM_COOLDOWN, executor.zoom_in, (),
-                    GState.ZOOMING, "Zoom In 👍", "Zoom Ready"
-                )
+                if "ZOOM_IN" in Cfg.ALLOWED_GESTURES:
+                    last_zoom_time, state, gesture_name = handle_advanced(
+                        last_zoom_time, Cfg.ZOOM_COOLDOWN, executor.zoom_in, (),
+                        GState.ZOOMING, "Zoom In 👍", "Zoom Ready"
+                    )
+                    if state == GState.ZOOMING:
+                        freeze_start = now
+                        freeze_duration = Cfg.ZOOM_FREEZE
 
             elif gesture.gesture == GestureType.ZOOM_OUT:
-                last_zoom_time, state, gesture_name = handle_advanced(
-                    last_zoom_time, Cfg.ZOOM_COOLDOWN, executor.zoom_out, (),
-                    GState.ZOOMING, "Zoom Out 👎", "Zoom Ready"
-                )
+                if "ZOOM_OUT" in Cfg.ALLOWED_GESTURES:
+                    last_zoom_time, state, gesture_name = handle_advanced(
+                        last_zoom_time, Cfg.ZOOM_COOLDOWN, executor.zoom_out, (),
+                        GState.ZOOMING, "Zoom Out 👎", "Zoom Ready"
+                    )
+                    if state == GState.ZOOMING:
+                        freeze_start = now
+                        freeze_duration = Cfg.ZOOM_FREEZE
+                else:
+                    state = GState.IDLE
+                    gesture_name = "Zoom Out (Restricted)"
 
             # Movement / release
             else:
                 if state == GState.PINCHING:
-                    # 1. Use a small 0.1s hardcoded debounce to prevent micro-flickers from double-firing
                     if now - last_click_time > 0.1:
-                        # 2. Direct pinch-and-release left click vs double click
                         if now - last_left_click_release < Cfg.DOUBLE_CLICK_WINDOW:
-                            executor.double_click(prev_sx, prev_sy)
-                            gesture_name = "Double Click ⚡"
+                            if "DOUBLE_CLICK" in Cfg.ALLOWED_GESTURES:
+                                executor.double_click(prev_sx, prev_sy)
+                                gesture_name = "Double Click ⚡"
+                                freeze_start = now
+                                freeze_duration = Cfg.LEFT_CLICK_FREEZE
                             last_left_click_release = 0.0
                         else:
-                            executor.left_click(prev_sx, prev_sy)
-                            gesture_name = "Click 👆"
+                            if "LEFT_PINCH" in Cfg.ALLOWED_GESTURES:
+                                executor.left_click(prev_sx, prev_sy)
+                                gesture_name = "Click 👆"
+                                freeze_start = now
+                                freeze_duration = Cfg.LEFT_CLICK_FREEZE
                             last_left_click_release = now
-                        
                         last_click_time = now
                     state = GState.IDLE
 
                 if gesture.gesture == GestureType.MOVE:
-                    executor.move_cursor(prev_sx, prev_sy)
-                    state = GState.MOVING
-                    gesture_name = "Moving ☝"
+                    if "MOVE" in Cfg.ALLOWED_GESTURES:
+                        executor.move_cursor(prev_sx, prev_sy)
+                        state = GState.MOVING
+                        gesture_name = "Moving ☝"
+                    else:
+                        state = GState.IDLE
+                        gesture_name = "Move (Restricted)"
                 elif state not in {GState.PINCHING}:
                     state = GState.IDLE
                     if gesture_name not in {"Click 👆", "Double Click ⚡", "Resumed"}:
