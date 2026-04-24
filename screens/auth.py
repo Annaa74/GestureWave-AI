@@ -198,3 +198,23 @@ class AuthScreen(tk.Frame):
         # Password
         tk.Label(self._form, text="Password", font=FNT_LBL,
                  fg=TEXT, bg=BG1, anchor="w").pack(fill="x", pady=(2, 1))
+        self._pw_e = tk.Entry(self._form, bg=BG2, fg=TEXT, insertbackground=TEXT,
+                              font=FNT_IN, show="*", relief="flat",
+                              highlightbackground=BORDER, highlightthickness=1)
+        self._pw_e.pack(fill="x", ipady=IPAD, pady=(0, 2))
+
+        # Confirm Password (signup only)
+        if is_signup:
+            tk.Label(self._form, text="Confirm Password", font=FNT_LBL,
+                     fg=TEXT, bg=BG1, anchor="w").pack(fill="x", pady=(2, 1))
+            self._pw2_e = tk.Entry(self._form, bg=BG2, fg=TEXT, insertbackground=TEXT,
+                                   font=FNT_IN, show="*", relief="flat",
+                                   highlightbackground=BORDER, highlightthickness=1)
+            self._pw2_e.pack(fill="x", ipady=IPAD, pady=(0, 2))
+
+        # Message
+        self._msg = tk.Label(self._form, text="", font=("Segoe UI", 9),
+                             fg=DANGER, bg=BG1, wraplength=500, justify="center")
+        self._msg.pack(fill="x", pady=(4, 1))
+        if not self.sb:
+            self._msg.config(text="Supabase not configured. Check .env file.", fg=WARNING)
