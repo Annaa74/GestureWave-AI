@@ -38,3 +38,15 @@ class WelcomeScreen(tk.Frame):
         else:
             b2 = clr_btn(c, "🎮  Try Demo (5 min)", BG3, TEXT, on_demo,
                          font=("Segoe UI Semibold", 12), padx=48, pady=12)
+        b2.pack(pady=(0, 10))
+
+        if is_demo_locked():
+            tk.Label(c, text="Demo already used on this system",
+                     font=("Segoe UI", 10), fg=DANGER, bg=BG0).pack()
+        else:
+            tk.Label(c, text="Move + Click only · 5 minutes · One-time",
+                     font=("Segoe UI", 10), fg=MUTED, bg=BG0).pack()
+
+        # Footer
+        tk.Label(c, text="v3.0", font=("Consolas", 10),
+                 fg=MUTED, bg=BG0).pack(pady=(36, 0))
