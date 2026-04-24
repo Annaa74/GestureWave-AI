@@ -178,3 +178,23 @@ class AuthScreen(tk.Frame):
         tk.Label(df, text="  or  ", font=("Segoe UI", 10), fg=MUTED, bg=BG1).pack(side="left")
         tk.Frame(df, bg=BORDER, height=1).pack(side="left", fill="x", expand=True)
 
+        # Display Name (signup only)
+        if is_signup:
+            tk.Label(self._form, text="Display Name", font=FNT_LBL,
+                     fg=TEXT, bg=BG1, anchor="w").pack(fill="x", pady=(2, 1))
+            self._name_e = tk.Entry(self._form, bg=BG2, fg=TEXT, insertbackground=TEXT,
+                                    font=FNT_IN, relief="flat",
+                                    highlightbackground=BORDER, highlightthickness=1)
+            self._name_e.pack(fill="x", ipady=IPAD, pady=(0, 2))
+
+        # Email
+        tk.Label(self._form, text="Email", font=FNT_LBL,
+                 fg=TEXT, bg=BG1, anchor="w").pack(fill="x", pady=(2, 1))
+        self._email_e = tk.Entry(self._form, bg=BG2, fg=TEXT, insertbackground=TEXT,
+                                 font=FNT_IN, relief="flat",
+                                 highlightbackground=BORDER, highlightthickness=1)
+        self._email_e.pack(fill="x", ipady=IPAD, pady=(0, 2))
+
+        # Password
+        tk.Label(self._form, text="Password", font=FNT_LBL,
+                 fg=TEXT, bg=BG1, anchor="w").pack(fill="x", pady=(2, 1))
