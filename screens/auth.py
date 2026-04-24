@@ -418,3 +418,23 @@ class AuthScreen(tk.Frame):
         except Exception:
             pass
 
+        try:
+            s = self.sb.table("user_settings").select("*").eq("user_id", uid).execute()
+            settings = s.data or []
+        except Exception:
+            pass
+
+        try:
+            g = self.sb.table("gesture_permissions").select(
+                "gesture_name,is_allowed").eq("user_id", uid).execute()
+            permissions = g.data or []
+        except Exception:
+            pass
+
+        self.after(0, lambda: self.on_success(role, settings, permissions))
+
+    # ── UI Helpers ───────────────────────────────────────────────────────────
+    def _fail(self, msg):
+        txt = "Create Account" if self._mode == "signup" else "Sign In"
+        try:
+            self._btn.config(text=txt, state="normal")
