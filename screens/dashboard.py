@@ -78,3 +78,23 @@ class Dashboard(tk.Frame):
             role_fg = SUCCESS if self.role == "admin" else ACCENT
             role_bg = "#062d1b" if self.role == "admin" else "#1e1e3a"
             tk.Label(rf, text=role_text, font=("Segoe UI", 8, "bold"), fg=role_fg, bg=role_bg, padx=8, pady=2).pack(side="left", padx=(0,10))
+
+        clr_btn(rf, "Logout", BG3, MUTED, self.on_logout, font=SANS_SM, padx=12, pady=4).pack(side="left")
+
+    def _build_status(self):
+        sf = tk.Frame(self, bg=BG1, highlightbackground=BORDER, highlightthickness=1)
+        sf.pack(fill="x", padx=16, pady=(10,0))
+
+        left = tk.Frame(sf, bg=BG1); left.pack(side="left", padx=14, pady=10)
+        right = tk.Frame(sf, bg=BG1); right.pack(side="right", padx=14, pady=10)
+
+        self._dot = tk.Label(left, text="●", font=("Segoe UI", 16), fg=MUTED, bg=BG1)
+        self._dot.pack(side="left", padx=(0,8))
+        tf = tk.Frame(left, bg=BG1); tf.pack(side="left")
+        self._st_big = tk.Label(tf, text="Ready", font=("Segoe UI", 12, "bold"), fg=TEXT, bg=BG1, anchor="w")
+        self._st_big.pack(anchor="w")
+        self._st_sub = tk.Label(tf, text="Press Start to begin tracking", font=SANS_SM, fg=MUTED, bg=BG1, anchor="w")
+        self._st_sub.pack(anchor="w")
+
+        self._clock = tk.Label(right, text="00:00:00", font=MONO, fg=MUTED, bg=BG1)
+        self._clock.pack()
