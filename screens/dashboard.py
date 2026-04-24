@@ -238,3 +238,18 @@ class Dashboard(tk.Frame):
             mm, ss = divmod(int(left), 60)
             self._timer_lbl.config(text=f"{mm:02}:{ss:02}")
             if left <= 60: self._timer_lbl.config(fg=DANGER)
+            if left <= 0:
+                self._demo_expired(); return
+
+        self._refresh_log()
+        self.after(1000, self._tick)
+
+    def _demo_expired(self):
+        if self._running: self._stop()
+        from ui_theme import lock_demo
+        lock_demo()
+        messagebox.showinfo("Demo Expired", "Your 5-minute demo has ended.\nSign in to unlock all features!")
+        self.on_logout()
+
+    def cleanup(self):
+        if self._running: self.engine.stop_flag = True
