@@ -238,3 +238,23 @@ class AuthScreen(tk.Frame):
         self.after(100, lambda: first.focus_set())
 
     # ── Sign In ──────────────────────────────────────────────────────────────
+    def _do_login(self):
+        if not self.sb:
+            self._msg.config(text="Supabase not available.", fg=DANGER)
+            return
+        email = self._email_e.get().strip()
+        pw = self._pw_e.get().strip()
+        if not email or not pw:
+            self._msg.config(text="Enter email and password.", fg=DANGER)
+            return
+        self._btn.config(text="Signing in...", state="disabled")
+        self._msg.config(text="")
+        threading.Thread(target=self._auth_login, args=(email, pw), daemon=True).start()
+
+    def _auth_login(self, email, pw):
+        try:
+            res = self.sb.auth.sign_in_with_password({"email": email, "password": pw})
+            if res.user and res.session:
+                # Update sign-in count in gesturewave_users
+                try:
+                    self.sb.table("gesturewave_users").update({
