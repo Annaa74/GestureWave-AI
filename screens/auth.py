@@ -98,3 +98,23 @@ class AuthScreen(tk.Frame):
     def __init__(self, parent, supabase_client, supabase_error, on_success, on_back):
         super().__init__(parent, bg=BG0)
         self.sb = supabase_client
+        self.sb_err = supabase_error
+        self.on_success = on_success
+        self.on_back = on_back
+        self._mode = "signin"
+        self._build()
+
+    # ── Layout ───────────────────────────────────────────────────────────────
+    def _build(self):
+        # Back button
+        top = tk.Frame(self, bg=BG0)
+        top.pack(fill="x", padx=28, pady=(8, 0))
+        clr_btn(top, "<-  Back", BG0, MUTED, self.on_back,
+                font=("Segoe UI", 10), padx=6, pady=2).pack(anchor="w")
+
+        # Center area
+        center = tk.Frame(self, bg=BG0)
+        center.pack(fill="both", expand=True, padx=40, pady=(0, 10))
+
+        # Logo
+        tk.Label(center, text="~", font=("Segoe UI", 24, "bold"),
