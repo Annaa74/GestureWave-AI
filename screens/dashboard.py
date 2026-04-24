@@ -138,3 +138,23 @@ class Dashboard(tk.Frame):
         lbl(tip, "💡 Move cursor to screen corner for emergency stop | ESC to exit camera", font=("Segoe UI", 8), fg=MUTED, bg=BG1).pack(anchor="w", padx=4)
 
     def _build_settings(self, t):
+        if self.is_demo:
+            lbl(t, "⚠ Settings locked in Demo mode. Sign in to customize.", font=SANS, fg=WARNING, bg=BG1).pack(padx=16, pady=30)
+            return
+
+        lbl(t, "TRACKING", font=("Segoe UI", 8, "bold"), fg=MUTED, bg=BG1).pack(anchor="w", padx=16, pady=(12,4))
+        self._slider(t, "Cursor Smoothing", self._alpha, 0.05, 1.0, "{:.2f}")
+        self._slider(t, "Dead Zone (px)", self._dead, 0, 20, "{:.0f}")
+        self._slider(t, "Click Sensitivity", self._thresh, 10, 60, "{:.0f}")
+        self._slider(t, "Scroll Speed", self._scroll, 5, 60, "{:.0f}")
+
+        tk.Frame(t, bg=BORDER, height=1).pack(fill="x", padx=20, pady=8)
+        lbl(t, "CAMERA", font=("Segoe UI", 8, "bold"), fg=MUTED, bg=BG1).pack(anchor="w", padx=16, pady=(4,6))
+        cf = tk.Frame(t, bg=BG1); cf.pack(fill="x", padx=16)
+        lbl(cf, "Camera Index", font=SANS_B, bg=BG1).pack(side="left")
+        for i in range(3):
+            tk.Radiobutton(cf, text=f" {i}", variable=self._cam, value=i, font=SANS, fg=TEXT, bg=BG1, selectcolor=ACCENT, activebackground=BG1, relief="flat").pack(side="left", padx=6)
+
+        tk.Frame(t, bg=BORDER, height=1).pack(fill="x", padx=20, pady=8)
+        clr_btn(t, "✓  Apply Settings", ACCENT, "white", self._apply, padx=20, pady=8).pack(anchor="w", padx=16)
+
