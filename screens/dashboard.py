@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import time, threading
 from ui_theme import *
+from core.gesture_log import gesture_log
 
 class Dashboard(tk.Frame):
     GESTURES = [
@@ -169,8 +170,16 @@ class Dashboard(tk.Frame):
 
     def _build_logview(self, t):
         tb = tk.Frame(t, bg=BG1); tb.pack(fill="x", padx=12, pady=(10,4))
-        lbl(tb, "LIVE LOG", font=("Segoe UI", 8, "bold"), fg=MUTED, bg=BG1).pack(side="left")
+        lbl(tb, "LIVE GESTURE LOG", font=("Segoe UI", 8, "bold"), fg=MUTED, bg=BG1).pack(side="left")
+        self._total_lbl = lbl(tb, "Total: 0", font=SANS_SM, fg=ACCENT, bg=BG1)
+        self._total_lbl.pack(side="left", padx=(12,0))
         clr_btn(tb, "Clear", BG2, MUTED, self._clear_log, font=SANS_SM, padx=10, pady=3).pack(side="right")
+
+        # Frequency bar
+        self._freq_frame = tk.Frame(t, bg=BG2)
+        self._freq_frame.pack(fill="x", padx=12, pady=(4,2))
+        self._freq_labels = {}
+
         self._log_txt = tk.Text(t, bg=BG2, fg="#a3e635", font=MONO, relief="flat", bd=0, state="disabled", wrap="word", cursor="arrow")
         sb = tk.Scrollbar(t, command=self._log_txt.yview, bg=BG2, troughcolor=BG2, relief="flat", bd=0)
         self._log_txt.configure(yscrollcommand=sb.set)
@@ -178,12 +187,34 @@ class Dashboard(tk.Frame):
         self._log_txt.pack(fill="both", expand=True, padx=(12,0), pady=(0,8))
 
     def _clear_log(self):
-        self._log_lines.clear(); self._refresh_log()
+        self._log_lines.clear()
+        gesture_log.clear()
+        self._refresh_log()
 
     def _refresh_log(self):
+        # Pull new gesture events from the shared log
+        new_events = gesture_log.get_new_events()
+        for event in new_events:
+            self._log_lines.append(event.formatted())
+
         self._log_txt.config(state="normal"); self._log_txt.delete("1.0", "end")
         self._log_txt.insert("end", "\n".join(reversed(self._log_lines)))
         self._log_txt.config(state="disabled")
+
+        # Update total count
+        self._total_lbl.config(text=f"Total: {gesture_log.total}")
+
+        # Update frequency bar
+        counts = gesture_log.counts
+        for widget in self._freq_frame.winfo_children():
+            widget.destroy()
+        # Show top gestures by count
+        sorted_counts = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:6]
+        for name, count in sorted_counts:
+            color = SUCCESS if "Click" in name else ACCENT if "Scroll" in name else CYAN if "Zoom" in name else MUTED
+            f = tk.Frame(self._freq_frame, bg=BG2)
+            f.pack(side="left", padx=(0, 8), pady=2)
+            lbl(f, f"{name}: {count}", font=("Consolas", 8), fg=color, bg=BG2).pack()
 
     # ── Engine ──
     def _start(self):
@@ -201,9 +232,11 @@ class Dashboard(tk.Frame):
             self._set_status("Tracking", SUCCESS, "Hand detection running")
             self.engine.run()
         except Exception as e:
-            self._log(f"Error: {e}"); self._set_status("Error", DANGER, str(e))
+            self._log(f"Error: {e}"); self._set_status("Error", DANGER, str(e)[:120])
         finally:
             self._running = False
+            # Small delay to ensure camera driver fully releases on Windows
+            time.sleep(0.5)
             self.after(0, lambda: (self._btn_start.config(state="normal"),
                                     self._btn_stop.config(state="disabled", bg=BG2, fg=MUTED)))
             self._log("Tracking stopped"); self._set_status("Stopped", MUTED, "Press Start again")
@@ -218,8 +251,14 @@ class Dashboard(tk.Frame):
         self.engine.Cfg.DEAD_ZONE = int(self._dead.get())
         self.engine.Cfg.CLICK_THRESH = int(self._thresh.get())
         self.engine.Cfg.SCROLL_AMOUNT = int(self._scroll.get())
-        self.engine.Cfg.CAMERA_ID = int(self._cam.get())
-        self._log("Settings applied"); self._set_status("Settings ✓", SUCCESS, "Restart tracking to use")
+        new_cam = int(self._cam.get())
+        cam_changed = new_cam != self.engine.Cfg.CAMERA_ID
+        self.engine.Cfg.CAMERA_ID = new_cam
+        self._log("Settings applied")
+        if cam_changed:
+            self._set_status("Settings ✓", SUCCESS, "Camera changed — restart tracking to use")
+        else:
+            self._set_status("Settings ✓", SUCCESS, "Applied live — no restart needed")
 
     def _set_status(self, title, color, sub=""):
         self.after(0, lambda: (self._st_big.config(text=title), self._st_sub.config(text=sub), self._dot.config(fg=color)))
