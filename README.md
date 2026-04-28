@@ -220,7 +220,8 @@ Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more informa
 
   **GestureWave AI** — Control space, not screens.
 
-  Developed with 💙 by **[Aditya Yadav](https://github.com/Annaa74)**
+  Developed with 💙 by **[Aditya Yadav](https://github.com/Annaa74)**  
+  *Based on original architecture concepts by Ayush.*
 
   [![GitHub](https://img.shields.io/badge/GitHub-Annaa74-181717.svg?logo=github&logoColor=white)](https://github.com/Annaa74)
 
