@@ -10,6 +10,7 @@ from enum import Enum, auto
 from core.config import Cfg
 from core.gestures import classify_gesture, GestureType, GestureConfig
 from core.actions import ActionExecutor
+from core.gesture_log import gesture_log
 
 stop_flag = False
 
@@ -232,10 +233,40 @@ def run():
     global stop_flag
     stop_flag = False
 
-    cap = cv2.VideoCapture(Cfg.CAMERA_ID)
-    if not cap.isOpened():
-        print("[ERROR] Cannot open camera.")
-        return
+    # Clear gesture log for fresh session
+    gesture_log.clear()
+
+    # Retry camera open — use DirectShow (CAP_DSHOW) on Windows for reliable release
+    cap = None
+    for attempt in range(5):
+        cap = cv2.VideoCapture(Cfg.CAMERA_ID, cv2.CAP_DSHOW)
+        if cap.isOpened():
+            print(f"[Camera] Opened successfully on attempt {attempt+1}")
+            break
+        cap.release()
+        print(f"[Camera] Attempt {attempt+1}/5 — waiting for camera...")
+        time.sleep(0.8)
+    
+    if cap is None or not cap.isOpened():
+        print("[ERROR] Cannot open camera after 5 attempts.")
+        raise RuntimeError("Cannot open camera. Close other apps using the camera and try again.")
+
+    # Wrap everything in try/finally to GUARANTEE camera release
+    try:
+        _run_engine_loop(cap)
+    finally:
+        # This runs even if the engine crashes — camera is ALWAYS released
+        print("[Camera] Releasing camera...")
+        cap.release()
+        time.sleep(0.5)  # Windows needs time to release the camera driver
+        cv2.destroyAllWindows()
+        gesture_log.log("System", "Engine stopped")
+        print("[GestureWave AI] Exited cleanly.")
+
+
+def _run_engine_loop(cap):
+    """The actual engine loop. Separated so try/finally in run() guarantees cleanup."""
+    global stop_flag
 
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, Cfg.FRAME_WIDTH)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, Cfg.FRAME_HEIGHT)
@@ -274,6 +305,16 @@ def run():
     freeze_start = 0.0
     freeze_duration = 0.0
 
+    # ── Click-on-release state machine ──────────────────────────────────────
+    # Instead of clicking immediately when pinch is detected, we track:
+    #   1. Pinch START (transition to pinching) — record time
+    #   2. Pinch HOLD (still pinching) — do nothing, just track
+    #   3. Pinch RELEASE (transition out of pinching) — FIRE the click
+    # This prevents continuous clicking from jittery detection.
+    pinch_start_time = 0.0        # When the pinch gesture first started
+    pinch_frames = 0              # How many consecutive frames we've been pinching
+    was_pinching = False          # Were we pinching last frame?
+
     # Stability tracking for advanced gestures
     last_gesture_type = None
     gesture_stable_frames = 0
@@ -287,6 +328,7 @@ def run():
     )
 
     print("[GestureWave AI Expanded Core] Starting. Press ESC to exit.")
+    gesture_log.log("System", "Engine started")
 
     def handle_advanced(last_time, cooldown, action_func, action_args, new_state, active_name, ready_name):
         if gesture_stable_frames >= Cfg.ADVANCED_GESTURE_STABLE_FRAMES and (now - last_time) > cooldown:
@@ -335,7 +377,7 @@ def run():
 
             if now - freeze_start < freeze_duration:
                 remaining = freeze_duration - (now - freeze_start)
-                gesture_name = f"Frozen ({remaining:.1f}s)"
+                gesture_name = f"Cooldown ({remaining:.1f}s)"
                 state = GState.PAUSED
                 draw_hud(frame, state, gesture_name, fps_counter.fps, smoothed_norm)
                 
@@ -361,6 +403,19 @@ def run():
                 last_gesture_type = gesture.gesture
                 gesture_stable_frames = 1
 
+            # ── BANNED gesture (middle finger, etc.) ────────────────────────
+            if gesture.gesture == GestureType.BANNED:
+                state = GState.PAUSED
+                gesture_name = "Banned ⛔"
+                freeze_start = now
+                freeze_duration = 1.0
+                gesture_log.log("Banned ⛔", "gesture_blocked")
+                draw_hud(frame, state, gesture_name, fps_counter.fps, smoothed_norm)
+                cv2.imshow("GestureWave AI", frame)
+                if cv2.waitKey(1) & 0xFF == 27:
+                    break
+                continue
+
             # Pause / resume
             if gesture.gesture == GestureType.PAUSE:
                 if "PAUSE" in Cfg.ALLOWED_GESTURES:
@@ -369,9 +424,11 @@ def run():
                         if state == GState.PAUSED:
                             state = GState.IDLE
                             gesture_name = "Resumed"
+                            gesture_log.log("Resumed ▶", "resume")
                         else:
                             state = GState.PAUSED
                             gesture_name = "Paused ✋"
+                            gesture_log.log("Paused ✋", "pause")
                 else:
                     state = GState.IDLE
                     gesture_name = "Pause (Restricted)"
@@ -396,6 +453,7 @@ def run():
                         gesture_name = "Right Click 🤟"
                         freeze_start = now
                         freeze_duration = Cfg.RIGHT_CLICK_FREEZE
+                        gesture_log.log("Right Click 🤟", "right_click")
                     else:
                         state = GState.IDLE
                         gesture_name = "Right Click Ready"
@@ -403,9 +461,18 @@ def run():
                     state = GState.IDLE
                     gesture_name = "R-Click (Restricted)"
 
-            # Left pinch
+            # ── Left pinch (CLICK-ON-RELEASE) ───────────────────────────────
+            # The key improvement: we DON'T click when pinch is detected.
+            # We track pinch duration and only click when pinch is RELEASED.
             elif gesture.gesture == GestureType.LEFT_PINCH:
                 if "LEFT_PINCH" in Cfg.ALLOWED_GESTURES:
+                    if not was_pinching:
+                        # Pinch just STARTED this frame
+                        pinch_start_time = now
+                        pinch_frames = 1
+                    else:
+                        pinch_frames += 1
+                    was_pinching = True
                     state = GState.PINCHING
                     gesture_name = "Pinching 🤏"
                 else:
@@ -419,6 +486,8 @@ def run():
                         last_scroll_time, Cfg.SCROLL_COOLDOWN, executor.scroll_up, (Cfg.SCROLL_AMOUNT,),
                         GState.SCROLLING, "Scroll Up ✌", "Scroll Ready"
                     )
+                    if state == GState.SCROLLING:
+                        gesture_log.log("Scroll Up ✌", "scroll_up")
 
             elif gesture.gesture == GestureType.SCROLL_DOWN:
                 if "SCROLL_DOWN" in Cfg.ALLOWED_GESTURES:
@@ -426,6 +495,8 @@ def run():
                         last_scroll_time, Cfg.SCROLL_COOLDOWN, executor.scroll_down, (Cfg.SCROLL_AMOUNT,),
                         GState.SCROLLING, "Scroll Down ✌", "Scroll Ready"
                     )
+                    if state == GState.SCROLLING:
+                        gesture_log.log("Scroll Down ✌", "scroll_down")
 
             # Zoom
             elif gesture.gesture == GestureType.ZOOM_IN:
@@ -437,6 +508,7 @@ def run():
                     if state == GState.ZOOMING:
                         freeze_start = now
                         freeze_duration = Cfg.ZOOM_FREEZE
+                        gesture_log.log("Zoom In 👍", "zoom_in")
 
             elif gesture.gesture == GestureType.ZOOM_OUT:
                 if "ZOOM_OUT" in Cfg.ALLOWED_GESTURES:
@@ -447,20 +519,28 @@ def run():
                     if state == GState.ZOOMING:
                         freeze_start = now
                         freeze_duration = Cfg.ZOOM_FREEZE
+                        gesture_log.log("Zoom Out 👎", "zoom_out")
                 else:
                     state = GState.IDLE
                     gesture_name = "Zoom Out (Restricted)"
 
-            # Movement / release
+            # ── Movement / RELEASE detection ────────────────────────────────
             else:
-                if state == GState.PINCHING:
-                    if now - last_click_time > 0.1:
+                # ── CLICK-ON-RELEASE: If we WERE pinching and now we're NOT ─
+                if was_pinching:
+                    pinch_duration_ms = (now - pinch_start_time) * 1000
+                    # Only register click if pinch was held for enough frames
+                    # AND enough time has passed since last click
+                    if (pinch_frames >= Cfg.PINCH_STABLE_FRAMES
+                            and now - last_click_time > Cfg.CLICK_COOLDOWN):
+                        # Check for double click
                         if now - last_left_click_release < Cfg.DOUBLE_CLICK_WINDOW:
                             if "DOUBLE_CLICK" in Cfg.ALLOWED_GESTURES:
                                 executor.double_click(prev_sx, prev_sy)
                                 gesture_name = "Double Click ⚡"
                                 freeze_start = now
                                 freeze_duration = Cfg.LEFT_CLICK_FREEZE
+                                gesture_log.log("Double Click ⚡", "double_click", pinch_duration_ms)
                             last_left_click_release = 0.0
                         else:
                             if "LEFT_PINCH" in Cfg.ALLOWED_GESTURES:
@@ -468,8 +548,12 @@ def run():
                                 gesture_name = "Click 👆"
                                 freeze_start = now
                                 freeze_duration = Cfg.LEFT_CLICK_FREEZE
+                                gesture_log.log("Click 👆", "left_click", pinch_duration_ms)
                             last_left_click_release = now
                         last_click_time = now
+
+                    was_pinching = False
+                    pinch_frames = 0
                     state = GState.IDLE
 
                 if gesture.gesture == GestureType.MOVE:
@@ -486,6 +570,11 @@ def run():
                         gesture_name = "Idle"
 
         else:
+            # No hand detected — reset everything
+            if was_pinching:
+                # Hand disappeared while pinching — don't trigger a click
+                was_pinching = False
+                pinch_frames = 0
             smoother.reset()
             state = GState.IDLE
             gesture_name = "No Hand"
@@ -499,9 +588,7 @@ def run():
         if key == 27:
             break
 
-    cap.release()
-    cv2.destroyAllWindows()
-    print("[GestureWave AI] Exited cleanly.")
+    hands.close()
 
 
 if __name__ == "__main__":
