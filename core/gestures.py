@@ -132,3 +132,4 @@ def classify_gesture(
         return GestureResult(GestureType.PAUSE, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
 
     return GestureResult(GestureType.IDLE, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
+# Gesture tracking module
