@@ -17,6 +17,7 @@ class GestureType(Enum):
     ZOOM_IN = auto()
     ZOOM_OUT = auto()
     PAUSE = auto()
+    BANNED = auto()       # Offensive gestures (middle finger, etc.)
 
 
 @dataclass
@@ -66,6 +67,13 @@ def is_index_only(lm):
     return index_up and (not middle_up) and (not ring_up) and (not pinky_up)
 
 
+def is_middle_finger_only(lm):
+    """Detect middle finger gesture (offensive — only middle finger extended)."""
+    index_up, middle_up, ring_up, pinky_up = finger_states(lm)
+    # Middle finger is up, all other fingers are down
+    return (not index_up) and middle_up and (not ring_up) and (not pinky_up)
+
+
 def classify_gesture(
     lm,
     frame_width,
@@ -84,6 +92,11 @@ def classify_gesture(
     two_finger_gap = distance(index_pt, middle_pt)
 
     index_up, middle_up, ring_up, pinky_up = finger_states(lm)
+
+    # ── BANNED GESTURES (checked FIRST — highest priority) ──────────────────
+    # Middle finger only = offensive gesture → block immediately
+    if is_middle_finger_only(lm):
+        return GestureResult(GestureType.BANNED, left_pinch, right_pinch, two_finger_gap, index_up, middle_up, ring_up, pinky_up)
 
     # Right click: three fingers up (index, middle, ring)
     if index_up and middle_up and ring_up and (not pinky_up):
