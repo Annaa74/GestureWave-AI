@@ -83,3 +83,5 @@ class GestureLog:
 
 # ── Global singleton ────────────────────────────────────────────────────────
 gesture_log = GestureLog()
+
+# Event logging system
