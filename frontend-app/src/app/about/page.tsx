@@ -134,7 +134,7 @@ export default function AboutPage() {
             </p>
             <div className="flex items-center gap-4">
               <a
-                href="https://github.com"
+                href="https://github.com/Annaa74/GestureWave-AI"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2.5 bg-white text-purple-700 font-bold text-sm rounded-full hover:scale-105 transition-all"
@@ -143,8 +143,12 @@ export default function AboutPage() {
                 View on GitHub
               </a>
               <div className="flex items-center gap-3 text-purple-200 text-sm">
-                <span className="flex items-center gap-1"><Star className="w-4 h-4" /> Star us</span>
-                <span className="flex items-center gap-1"><GitFork className="w-4 h-4" /> Fork it</span>
+                <a href="https://github.com/Annaa74/GestureWave-AI" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
+                  <Star className="w-4 h-4" /> Star us
+                </a>
+                <a href="https://github.com/Annaa74/GestureWave-AI/fork" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-white transition-colors">
+                  <GitFork className="w-4 h-4" /> Fork it
+                </a>
               </div>
             </div>
           </div>
@@ -229,7 +233,7 @@ export default function AboutPage() {
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap">
             <a
-              href="https://github.com"
+              href="https://github.com/Annaa74/GestureWave-AI"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-7 py-3.5 bg-black text-white font-bold rounded-full hover:scale-105 transition-all shadow-xl shadow-black/10"

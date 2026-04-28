@@ -1,215 +1,107 @@
-<div align="center">
-  <img src="assets/banner.png" alt="GestureWave AI Banner" width="100%" />
+# GestureWave AI 🖐️
+![GestureWave Banner](assets/banner.png)
+### Touch-Free Gesture Control System
 
-  # GestureWave AI
+**GestureWave AI v2.1** is a real-time, touch-free hand gesture recognition engine that maps your hand movements to your PC cursor and actions using computer vision—no extra hardware required.
 
-  ### Real-Time, Touch-Free Gesture Control System
+## Key Features
+- **Premium GUI Dashboard**: Full settings menu to control smoothing, dead zones, click sensitivity, and live event logs smoothly wrapped in a Dark Mode Tkinter UI.
+- **8 Native Gestures**: 
+  - ☝️ **Move cursor**
+  - 🤏 **Left click**
+  - 🤌 **Right click**
+  - ⚡ **Double click**
+  - 🤏→ **Drag and Drop**
+  - ✌️ **Scroll up/down**
+  - 🔍 **Zoom in/out**
+  - ✋ **Pause tracking**
+- **Custom App Shortcuts**: Press `R` in front of your camera to record custom hand poses. (Currently, `Gesture_1` automatically launches LinkedIn!)
+- **Windows Installer**: One-click `.exe` builder via GitHub actions, entirely deployable. 
+- **Next.js Frontend**: Included documentation, feature showcase, and community routing inside the `/frontend-app/` directory.
 
-  [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
-  [![MediaPipe](https://img.shields.io/badge/MediaPipe-ML_Pipeline-FF6F00.svg?logo=google&logoColor=white)](https://developers.google.com/mediapipe)
-  [![OpenCV](https://img.shields.io/badge/OpenCV-4.8-5C3EE8.svg?logo=opencv&logoColor=white)](https://opencv.org/)
-  [![Supabase](https://img.shields.io/badge/Supabase-Auth_%26_DB-3FCF8E.svg?logo=supabase&logoColor=white)](https://supabase.com/)
-  [![License](https://img.shields.io/badge/License-MIT-A855F7.svg)](LICENSE)
+## Tech Stack
+- **AI/Vision**: Python, MediaPipe, OpenCV, NumPy
+- **Desktop Control**: PyAutoGUI, Tkinter
+- **Continuous Integration**: GitHub Actions, PyInstaller, Inno Setup (ISCC)
+- **Frontend App**: Next.js, React, Tailwind CSS, Framer Motion
 
-  *Control your computer with hand gestures — no hardware, no gloves, just your webcam.*
+## Installation & Usage
+
+**Method 1: Desktop Installer (Easiest)**
+1. Check the GitHub Actions artifacts or your repository releases.
+2. Download `GestureWaveAI_Installer.exe` and follow the standard Windows setup wizard.
+3. Launch directly from your start menu.
+
+**Method 2: Run from Source (For Developers)**
+```bash
+# Safely restrict NumPy to prevent MediaPipe architecture clashes
+pip install "numpy<2" -r requirements.txt
 
   **Developed by [Aditya Yadav],[Ananya Baghel](https://github.com/Annaa74)**
 
+### Development Testing Flow
+Use this flow if you are testing modifications to the recognition engine. It bypasses the launcher completely and prints debug logs directly to the console.
+```bash
+python main.py
+```
+
+---
+
+## 👋 Gesture Reference Guide
+
+### 🟢 Stable Core Gestures
+The core gesture loop relies on absolute tracking primitives. These are highly optimized and stable across various lighting conditions.
+
+| Emoji | Intended Action | Physical Hand Shape | Description |
+| :--- | :--- | :--- | :--- |
+| ☝️ | **Move Cursor** | Index finger only | Cursor mimics the absolute 2D position of your index fingertip. |
+| 🤏 | **Left Click** | Thumb + Index pinch | Tap the tips of your thumb and index finger together. |
+| 🤌 | **Right Click** | Middle + Thumb pinch | Tap the tips of your middle finger and thumb together. |
+| ⚡ | **Double Click**| Quick double pinch | Perform two rapid thumb-index pinches in succession. |
+| 🤏→ | **Drag & Drop** | Hold Thumb+Index | Pinch items and keep fingers held to move; release to drop. |
+| ✌️ | **Scroll** | Peace sign | Point index/middle up; move hand vertically to scroll. |
+| 🔍 | **Zoom** | Two fingers spread | Expand/contract distance between index and middle fingers. |
+| ✋ | **Pause/Resume**| Open palm | Completely toggles tracking on or off. |
+
+### ⌨️ Testing & Override Controls
+If the tracker window is in focus, the following debug commands are active:
+- Press **`R`** to instantly snapshot and record a custom target gesture to the registry.
+- Press **`Esc`** to safely execute a shutdown and release the camera hook.
+
+---
+
+## 🛑 Known Limitations
+
+- **Lighting Dependency:** Severe backlighting or ultra-low light can drastically reduce MediaPipe's confidence matrix.
+- **Occlusion Errors:** If the thumb is hidden behind the palm (relative to the camera), pinch thresholds may fail to fire.
+- **Numpy Versioning:** Requires `numpy < 2.0` due to MediaPipe's internal architecture constraints.
+
+---
+
+## 🔮 Future Scope
+
+- **AI Smoothing (Euro Filter):** Implementation of 1€ filter logic for even smoother, lag-free heavy movement.
+- **Multi-Hand Logic:** Supporting two-handed chorded shortcuts (e.g., left hand for modifiers like Ctrl/Shift, right hand for navigation).
+- **System Tray Integration:** Ability to run the engine entirely in the background as a Windows Service.
+- **Voice-Gesture Fusion:** Integrating voice commands (Whisper AI) to complement hand gestures for a truly multimodal HCI experience.
+
+---
+
+## 🏢 Use Cases
+
+- **Presentation Spaces:** Control digital slideshows naturally while standing significantly away from your laptop.
+- **Accessible Workstations:** Interact with standard UIs without requiring physical peripheral grips or fine motor mouse control.
+- **Hands-Free Prototyping:** A foundation for integration into smart-mirrors, interactive art, and sterile manufacturing environments.
+
+---
+
+## 📄 License & Usage
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+<div align="center">
+  <i>Control space, not screens. Developed by the GestureWave AI Team.</i>
 </div>
-
----
-
-## 🌊 Overview
-
-**GestureWave AI** is a production-grade, touch-free gesture control engine that translates physical hand movements into precise desktop actions in real-time. Built on top of Google's MediaPipe ML pipeline and OpenCV, it transforms any standard webcam into a high-precision input device — enabling cursor control, clicking, scrolling, and zooming through natural hand gestures.
-
-The system features a complete authentication layer (Supabase), a premium dark-mode desktop UI, real-time gesture analytics, and a safety-first architecture that prevents accidental system modifications.
-
-### Why This Exists
-
-Traditional input devices require physical contact. GestureWave AI eliminates that barrier entirely — enabling:
-- **Accessible computing** for users with motor disabilities
-- **Touchless presentations** where you control slides from across the room
-- **Hygienic interfaces** in medical/industrial environments
-- **Spatial computing research** as a foundation for gesture-based UIs
-
----
-
-## ✨ Key Features
-
-### 🎯 Gesture Engine
-- **Click-on-Release State Machine** — Clicks fire on pinch *release*, not detection, eliminating accidental spam-clicks
-- **Pinch Stability Requirement** — Requires 3 consecutive stable frames before registering a pinch
-- **EMA Cursor Smoothing** — Exponential Moving Average with dynamic velocity boosting for precise, jitter-free cursor movement
-- **Dead Zone Filtering** — Ignores micro-movements below a configurable pixel threshold
-
-### 🛡️ Safety Architecture
-- **Banned Gesture Detection** — Offensive gestures (middle finger) are detected with highest priority and blocked with a 1-second freeze penalty
-- **System Safety Boundaries** — The `ActionExecutor` is restricted to mouse actions, scroll, and zoom only. No file operations, no arbitrary keyboard input, no system settings modification
-- **Blocked Hotkeys Registry** — Dangerous key combinations (`Alt+F4`, `Ctrl+W`, `Ctrl+Delete`, etc.) are explicitly listed and can never be triggered
-- **Safe Top Bar** — Clicks are blocked in the top 90px of the screen to prevent accidental taskbar/title bar interactions
-
-### 🔐 Authentication & Persistence
-- **Supabase Integration** — Full Email/Password and Google OAuth (PKCE flow) authentication
-- **Session Persistence** — Login tokens saved locally for auto-login on subsequent launches
-- **Error Visibility** — All database errors are logged with actionable instructions (no silent failures)
-- **Auto-Table Detection** — If the database table is missing, the system prints the exact SQL to create it
-
-### 📊 Real-Time Analytics
-- **Live Gesture Log** — Every gesture event is logged with timestamp, action type, and duration in milliseconds
-- **Frequency Analytics** — Dashboard shows color-coded gesture frequency counts (Click: 12, Scroll: 8, Zoom: 3)
-- **Thread-Safe Event Bus** — Engine and dashboard share events via a lock-protected in-memory deque
-
-### 🎨 Premium Desktop UI
-- **720×820 Fixed-Resolution Window** — iOS-inspired dark theme with Segoe UI typography
-- **Tab-Based Dashboard** — Gestures reference, live settings tuning, and real-time log tabs
-- **Live Settings** — Smoothing, dead zone, click sensitivity, and scroll speed adjustable during tracking without restart
-- **DirectShow Camera Backend** — Reliable camera open/release cycling on Windows
-
----
-
-## 🎮 Gesture Reference
-
-| Gesture | Hand Shape | Action | Status |
-|:--------|:-----------|:-------|:------:|
-| ☝️ **Move Cursor** | Index finger only | Cursor follows fingertip position | ✅ Stable |
-| 🤏 **Left Click** | Thumb + Index pinch → release | Fires click on pinch release | ✅ Stable |
-| ⚡ **Double Click** | Two quick pinch-releases | Double click within 0.40s window | ✅ Stable |
-| 🤟 **Right Click** | Index + Middle + Ring fingers up | Right-click at cursor position | ✅ Stable |
-| ✌️ **Scroll Up** | Peace sign + hand in top half | Scroll up (configurable speed) | ✅ Stable |
-| ✌️ **Scroll Down** | Peace sign + hand in bottom half | Scroll down | ✅ Stable |
-| 👍 **Zoom In** | Closed fist + thumb extended up | Ctrl+Plus (browser/app zoom) | ✅ Stable |
-| 👎 **Zoom Out** | Closed fist + thumb extended down | Ctrl+Minus | ⚠️ Experimental |
-| ✋ **Pause/Resume** | Open palm (4+ fingers) | Freeze/unfreeze all tracking | ✅ Stable |
-| 🖕 **Middle Finger** | Only middle finger extended | **BLOCKED** — 1s freeze penalty | 🚫 Banned |
-
----
-
-## 🏗️ Architecture
-
-### System Flow
-
-```
-┌─────────────┐     ┌─────────────┐     ┌──────────────────┐
-│   Webcam    │────▶│  MediaPipe  │────▶│ Gesture Classifier│
-│ (DirectShow)│     │  Hands ML  │     │  (gestures.py)    │
-└─────────────┘     └─────────────┘     └────────┬─────────┘
-                                                  │
-                                    ┌─────────────▼──────────────┐
-                                    │   Is it BANNED?            │
-                                    │   YES → Freeze 1s + Block  │
-                                    │   NO  → Continue           │
-                                    └─────────────┬──────────────┘
-                                                  │
-                         ┌────────────────────────▼────────────────────────┐
-                         │              State Machine (main.py)            │
-                         │  IDLE → MOVING → PINCHING → click-on-RELEASE   │
-                         │         SCROLLING / ZOOMING / PAUSED            │
-                         └────────────────────────┬────────────────────────┘
-                                                  │
-              ┌───────────────────┬───────────────▼────────────────┐
-              │                   │                                │
-     ┌────────▼────────┐  ┌──────▼──────┐              ┌──────────▼──────────┐
-     │ ActionExecutor  │  │ Gesture Log │              │    Dashboard UI     │
-     │  (actions.py)   │  │ (in-memory) │              │   (dashboard.py)    │
-     │                 │  │             │              │                     │
-     │ ✅ Mouse move   │  │ Events +    │──────────────▶│ Live Log tab       │
-     │ ✅ Click/scroll │  │ Frequencies │              │ Frequency bar      │
-     │ ✅ Zoom only    │  └─────────────┘              │ Settings (live)    │
-     │ ❌ No file ops  │                               └─────────────────────┘
-     │ ❌ No sys mods  │
-     └─────────────────┘
-```
-
-### Project Structure
-
-```text
-GestureWave-AI/
-├── app.py                    # Application launcher with session persistence
-├── main.py                   # Core gesture engine (click-on-release state machine)
-├── ui_theme.py               # Design tokens, palette, fonts, and UI helpers
-│
-├── core/                     # Engine internals
-│   ├── config.py             # Runtime configuration (thresholds, timing, safety)
-│   ├── gestures.py           # Hand landmark classification with banned detection
-│   ├── actions.py            # Safe system action executor (mouse/scroll/zoom only)
-│   ├── gesture_log.py        # Thread-safe real-time gesture event logging
-│   └── __init__.py
-│
-├── screens/                  # Modular UI components (Tkinter)
-│   ├── welcome.py            # Landing screen with Demo / Sign In options
-│   ├── auth.py               # Email/Password + Google OAuth authentication
-│   ├── dashboard.py          # Tracking dashboard with live log + settings
-│   └── __init__.py
-│
-├── frontend-app/             # Next.js web showcase (separate deployment)
-├── assets/                   # Banner image and visual assets
-│
-├── requirements.txt          # Python dependencies
-├── installer.iss             # Windows installer config (Inno Setup)
-├── .gitignore                # Python, Node, IDE, secrets, session exclusions
-├── LICENSE                   # MIT License
-└── README.md                 # This file
-```
-
-### Key Design Decisions
-
-| Decision | Why |
-|----------|-----|
-| **Click-on-release** instead of click-on-detect | Eliminates continuous click spam from jittery detection |
-| **DirectShow** (`cv2.CAP_DSHOW`) instead of default MSMF | Reliable camera release on Windows — can stop/restart tracking |
-| **try/finally** camera wrapper | Camera is *always* released, even if engine crashes |
-| **BANNED checked first** in classifier | Offensive gestures can't accidentally trigger scroll/zoom |
-| **Session file** (`~/.gesturewave_session.json`) | Users skip login on subsequent launches |
-| **Supabase** instead of MongoDB | Built-in Auth + Realtime + PostgREST — no extra infra needed |
-| **In-memory deque** instead of DB for gesture events | Zero latency, thread-safe, no persistence overhead for ephemeral data |
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- **Python 3.8+** with pip
-- A working **webcam**
-- **Windows 10/11** (DirectShow camera backend)
-
-### Installation
-
-**1. Clone the repository**
-```bash
-git clone https://github.com/Annaa74/GestureWave-AI.git
-cd GestureWave-AI
-git checkout upgrade
-```
-
-**2. Create and activate a virtual environment**
-```bash
-python -m venv venv
-venv\Scripts\activate       # Windows
-# source venv/bin/activate  # macOS/Linux
-```
-
-**3. Install dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-**4. Configure environment**
-
-Create a `.env` file in the project root:
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your_anon_key_here
-```
-
-> [!TIP]
-> Don't have a Supabase project? The app works fine without one — you can use **Demo Mode** from the welcome screen (5-minute trial with Move + Click gestures).
-
-**5. Launch the application**
-```bash
-python app.py
-```
 
 ---
 
