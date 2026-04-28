@@ -7,10 +7,10 @@ class Cfg:
     CAMERA_FPS = 24
 
     # Cursor smoothing
-    SMOOTH_ALPHA = 0.40
-    VEL_BOOST_THRESHOLD = 65
-    VEL_BOOST_ALPHA = 0.70
-    DEAD_ZONE = 3
+    SMOOTH_ALPHA = 0.30
+    VEL_BOOST_THRESHOLD = 35
+    VEL_BOOST_ALPHA = 0.85
+    DEAD_ZONE = 2
 
     # Gesture thresholds
     CLICK_THRESH = 30
@@ -18,16 +18,17 @@ class Cfg:
     PINCH_RELEASE = 50
 
     # Timing / hold behavior
-    CLICK_COOLDOWN = 0.22
-    DOUBLE_CLICK_WINDOW = 0.36
-    SCROLL_COOLDOWN = 0.08
-    ZOOM_COOLDOWN = 0.10
-    PAUSE_COOLDOWN = 1.00
+    CLICK_COOLDOWN = 0.30        # ← Increased: prevents rapid re-clicks
+    DOUBLE_CLICK_WINDOW = 0.40
+    SCROLL_COOLDOWN = 0.08       # ← Slightly increased for smoother scrolling
+    ZOOM_COOLDOWN = 0.10         # ← Slightly increased
+    PAUSE_COOLDOWN = 0.50
 
-    # Freeze times
-    LEFT_CLICK_FREEZE = 2.0
-    RIGHT_CLICK_FREEZE = 3.0
-    ZOOM_FREEZE = 6.0
+    # Freeze times — REDUCED for responsiveness
+    # These only lock the cursor BRIEFLY after an action fires
+    LEFT_CLICK_FREEZE = 0.05     # ← Was 0.15, now barely noticeable
+    RIGHT_CLICK_FREEZE = 0.12    # ← Was 0.30, feels snappy now
+    ZOOM_FREEZE = 0.15           # ← Was 0.40, much faster
 
     PALM_OPEN_FINGERS = 4
 
@@ -39,6 +40,7 @@ class Cfg:
 
     # Stability / debounce
     ADVANCED_GESTURE_STABLE_FRAMES = 4
+    PINCH_STABLE_FRAMES = 3      # ← NEW: require 3 stable frames before pinch registers
 
     # ── Security & Auth ────────────────────────────────────────────────────────
     USER_ROLE = "guest"  # 'guest', 'standard', 'admin'
