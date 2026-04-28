@@ -50,3 +50,5 @@ class WelcomeScreen(tk.Frame):
         # Footer
         tk.Label(c, text="v3.0", font=("Consolas", 10),
                  fg=MUTED, bg=BG0).pack(pady=(36, 0))
+
+# Welcome screen initialization
