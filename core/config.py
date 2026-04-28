@@ -56,3 +56,4 @@ class Cfg:
         "ZOOM_IN",
         "PAUSE"
     }
+# Core configuration initialized
