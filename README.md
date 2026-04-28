@@ -13,7 +13,7 @@
 
   *Control your computer with hand gestures — no hardware, no gloves, just your webcam.*
 
-  **Developed by [Aditya Yadav](https://github.com/Annaa74)**
+  **Developed by [Aditya Yadav],[Ananya Baghel](https://github.com/Annaa74)**
 
 </div>
 
