@@ -2,7 +2,7 @@
 GestureWave AI — Desktop Launcher v3.0
 Premium dark-mode GUI with Auth, Demo mode & full dashboard.
 """
-import sys, os, tkinter as tk
+import sys, os, tkinter as tk, json
 import importlib.util
 from tkinter import messagebox
 from dotenv import load_dotenv
@@ -44,6 +44,39 @@ else:
         supabase_init_error = str(e)
         print(f"[Supabase] Client: FAILED - {e}")
 
+# ── Session Cache ──────────────────────────────────────────────────────────
+SESSION_FILE = os.path.join(os.path.expanduser("~"), ".gesturewave_session.json")
+
+def save_session(access_token, refresh_token, user_id):
+    """Save login session to disk for auto-login on next launch."""
+    try:
+        data = {"access_token": access_token, "refresh_token": refresh_token, "user_id": user_id}
+        with open(SESSION_FILE, "w") as f:
+            json.dump(data, f)
+        print(f"[Session] Saved for user {user_id[:8]}...")
+    except Exception as e:
+        print(f"[Session] Save failed: {e}")
+
+def load_session():
+    """Load saved session from disk. Returns (access_token, refresh_token, user_id) or None."""
+    try:
+        if os.path.exists(SESSION_FILE):
+            with open(SESSION_FILE, "r") as f:
+                data = json.load(f)
+            return data.get("access_token"), data.get("refresh_token"), data.get("user_id")
+    except Exception:
+        pass
+    return None
+
+def clear_session():
+    """Remove saved session file on logout."""
+    try:
+        if os.path.exists(SESSION_FILE):
+            os.remove(SESSION_FILE)
+            print("[Session] Cleared.")
+    except Exception:
+        pass
+
 
 class GestureWaveApp(tk.Tk):
     W, H = 720, 820
@@ -62,7 +95,34 @@ class GestureWaveApp(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self._quit)
 
         self._current = None
+
+        # Try auto-login from saved session
+        if supabase_client and self._try_auto_login():
+            return  # Already navigated to dashboard
         self._show_welcome()
+
+    def _try_auto_login(self):
+        """Attempt to restore a previously saved session."""
+        session_data = load_session()
+        if not session_data:
+            return False
+
+        access_token, refresh_token, user_id = session_data
+        if not access_token or not refresh_token:
+            return False
+
+        try:
+            print("[Session] Restoring saved session...")
+            supabase_client.auth.set_session(access_token, refresh_token)
+            user = supabase_client.auth.get_user()
+            if user and user.user:
+                print(f"[Session] Auto-login successful: {user.user.id[:8]}...")
+                self._on_auth_success("standard", [], [])
+                return True
+        except Exception as e:
+            print(f"[Session] Auto-login failed (token expired): {e}")
+            clear_session()
+        return False
 
     def _clear(self):
         if self._current:
@@ -101,6 +161,15 @@ class GestureWaveApp(tk.Tk):
         self._clear()
         engine.Cfg.USER_ROLE = role
 
+        # Save session for auto-login next time
+        if supabase_client:
+            try:
+                session = supabase_client.auth.get_session()
+                if session:
+                    save_session(session.access_token, session.refresh_token, session.user.id)
+            except Exception as e:
+                print(f"[Session] Could not save session: {e}")
+
         # Apply settings
         if settings_data:
             s = settings_data[0]
@@ -127,6 +196,7 @@ class GestureWaveApp(tk.Tk):
         if supabase_client:
             try: supabase_client.auth.sign_out()
             except: pass
+        clear_session()  # Remove saved login
         engine.stop_flag = True
         engine.Cfg.ALLOWED_GESTURES = {
             "MOVE", "LEFT_PINCH", "RIGHT_CLICK", "DOUBLE_CLICK",
