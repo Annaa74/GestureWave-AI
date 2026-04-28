@@ -83,3 +83,4 @@ class ActionExecutor:
     def zoom_out(self):
         """Zoom out using Ctrl+Minus. Safe — only changes view zoom level."""
         pyautogui.hotkey("ctrl", "-")
+# Action execution engine
