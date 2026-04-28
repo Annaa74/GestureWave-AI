@@ -292,3 +292,5 @@ class Dashboard(tk.Frame):
 
     def cleanup(self):
         if self._running: self.engine.stop_flag = True
+
+# Dashboard UI components
