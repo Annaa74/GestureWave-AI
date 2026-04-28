@@ -51,3 +51,5 @@ class Tooltip:
                  relief="solid", bd=1).pack(ipadx=6, ipady=3)
     def _hide(self):
         if self.tw: self.tw.destroy(); self.tw = None
+
+# Theme definitions loaded
