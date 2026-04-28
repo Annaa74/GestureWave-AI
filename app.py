@@ -211,3 +211,5 @@ class GestureWaveApp(tk.Tk):
 
 if __name__ == "__main__":
     GestureWaveApp().mainloop()
+
+# App execution context
