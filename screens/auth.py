@@ -544,3 +544,5 @@ class AuthScreen(tk.Frame):
             self.after(2000, lambda: self._switch("signin"))
         except Exception:
             pass
+
+# Authentication handlers
