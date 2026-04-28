@@ -593,3 +593,4 @@ def _run_engine_loop(cap):
 
 if __name__ == "__main__":
     run()
+# Main event loop
