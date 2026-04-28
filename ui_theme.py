@@ -30,7 +30,7 @@ def lock_demo():
 
 def clr_btn(parent, text, bg, fg, cmd, font=SANS_B, padx=20, pady=8, **kw):
     return tk.Button(parent, text=text, bg=bg, fg=fg, activebackground=bg,
-                     activeforeground=fg, font=font, relief="flat", bd=0,
+                     activeforeground=fg, disabledforeground=MUTED, font=font, relief="flat", bd=0,
                      cursor="hand2", command=cmd, padx=padx, pady=pady, **kw)
 
 def lbl(parent, text, font=SANS, fg=TEXT, bg=BG1, **kw):
