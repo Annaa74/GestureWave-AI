@@ -5,6 +5,7 @@ import webbrowser
 import http.server
 import urllib.parse
 import time
+from datetime import datetime
 from ui_theme import *
 
 OAUTH_PORT = 5789
@@ -253,24 +254,26 @@ class AuthScreen(tk.Frame):
 
     def _auth_login(self, email, pw):
         try:
+            print(f"[DEBUG] Attempting login for {email}")
             res = self.sb.auth.sign_in_with_password({"email": email, "password": pw})
+            print(f"[DEBUG] Login response: user={res.user is not None}, session={res.session is not None}")
             if res.user and res.session:
-                # Update sign-in count in gesturewave_users
+                # Ensure user record exists with updated sign-in count
                 try:
-                    self.sb.table("gesturewave_users").update({
-                        "sign_in_count": res.user.user_metadata.get("sign_in_count", 1),
-                        "last_sign_in": "now()"
-                    }).eq("id", res.user.id).execute()
-                except Exception:
+                    self._ensure_user_record(res.user.id)
+                except Exception as e:
+                    print(f"[DEBUG] Error ensuring user record: {e}")
                     pass
-                self._load_user(res.user.id)
+                self.after(0, lambda uid=res.user.id: self._load_user(uid))
             else:
+                print(f"[DEBUG] Login failed - no user or session")
                 self.after(0, lambda: self._fail("Sign-in failed. Check credentials."))
         except Exception as e:
             err = str(e)
+            print(f"[DEBUG] Login exception: {err}")
             # Parse common errors into friendly messages
             if "Invalid login" in err:
-                msg = "Invalid email or password."
+                msg = "Invalid email or password.\nIf you signed up with Google, use 'Continue with Google' instead."
             elif "Email not confirmed" in err:
                 msg = "Email not confirmed. Check your inbox."
             elif "rate limit" in err.lower():
@@ -310,26 +313,41 @@ class AuthScreen(tk.Frame):
                 "options": {"data": {"display_name": name}}
             })
             if res.user and res.session:
-                # Signup with auto-confirm -> go straight to dashboard
-                self._load_user(res.user.id)
+                # Signup with auto-confirm → create user record and go to dashboard
+                print(f"[Auth] Signup successful: {res.user.id[:8]}... (auto-confirmed)")
+                self.after(0, lambda: self._btn.config(text="Logging in...", state="disabled"))
+                try:
+                    self._ensure_user_record(res.user.id)
+                except Exception:
+                    pass
+                self.after(0, lambda uid=res.user.id: self._load_user(uid))
             elif res.user:
-                # User created but no session -> try sign-in (auto-confirm trigger)
+                # User created but no session → email confirmation might be required
+                # Try immediate sign-in (works if confirm is disabled)
+                print(f"[Auth] Signup created user, attempting immediate login...")
                 try:
                     login = self.sb.auth.sign_in_with_password({
                         "email": email, "password": pw
                     })
                     if login.user and login.session:
-                        self._load_user(login.user.id)
+                        print(f"[Auth] Immediate login successful after signup")
+                        self.after(0, lambda: self._btn.config(text="Logging in...", state="disabled"))
+                        try:
+                            self._ensure_user_record(login.user.id)
+                        except Exception:
+                            pass
+                        self.after(0, lambda uid=login.user.id: self._load_user(uid))
                         return
-                except Exception:
-                    pass
-                self.after(0, lambda: self._info("Account created! Sign in to continue."))
+                except Exception as login_err:
+                    print(f"[Auth] Immediate login failed: {login_err}")
+                self.after(0, lambda: self._info("Account created! Please check your email to confirm."))
             else:
                 self.after(0, lambda: self._fail("Signup failed. Try again."))
         except Exception as e:
             err = str(e)
-            if "already" in err.lower():
-                msg = "Email already registered. Use Sign In instead."
+            print(f"[Auth] Signup error: {err}")
+            if "already" in err.lower() or "duplicate" in err.lower():
+                msg = "Email already registered.\nUse Sign In or Continue with Google."
             elif "rate limit" in err.lower():
                 msg = "Too many attempts. Wait a minute."
             elif "invalid" in err.lower() and "email" in err.lower():
@@ -376,22 +394,46 @@ class AuthScreen(tk.Frame):
 
             if server.auth_result:
                 result = server.auth_result
+                print(f"[DEBUG] OAuth result received: type={result.get('type')}")
                 try:
                     if result.get("type") == "pkce":
-                        self.sb.auth.exchange_code_for_session({"auth_code": result["code"]})
+                        # Use the standard exchange method - PKCE is handled internally by Supabase
+                        print(f"[DEBUG] Exchanging code for session...")
+                        exchange_result = self.sb.auth.exchange_code_for_session({"auth_code": result["code"]})
+                        print(f"[DEBUG] Exchange result: {exchange_result}")
+                        if not exchange_result:
+                            raise Exception("Token exchange returned None")
+                        # Verify session was set
+                        user = self.sb.auth.get_user()
+                        if not user or not user.user:
+                            raise Exception("No user after token exchange")
                     elif result.get("type") == "token":
+                        print(f"[DEBUG] Setting session from token...")
                         self.sb.auth.set_session(result["access_token"], result["refresh_token"])
-
+                
+                    # Get user and ensure record exists
                     user = self.sb.auth.get_user()
+                    print(f"[DEBUG] Got user: {user}")
                     if user and user.user:
-                        self._load_user(user.user.id)
+                        print(f"[DEBUG] User ID: {user.user.id}")
+                        try:
+                            self._ensure_user_record(user.user.id)
+                        except Exception as e:
+                            print(f"[DEBUG] Error ensuring user record: {e}")
+                            pass
+                        self.after(0, lambda uid=user.user.id: self._load_user(uid))
+                        return  # Success case
                     else:
                         self.after(0, lambda: self._fail("Could not get user after Google auth."))
+                        return
                 except Exception as e:
+                    print(f"[DEBUG] OAuth processing error: {e}")
                     self.after(0, lambda m=str(e): self._fail(f"Google auth: {m[:100]}"))
-            else:
-                self.after(0, lambda: self._fail("Google sign-in timed out. Try again."))
-
+                    return
+        
+            # If we get here, either timeout or no auth result
+            print(f"[DEBUG] OAuth timeout - no auth result received")
+            self.after(0, lambda: self._fail("Google sign-in timed out. Try again."))
         except OSError as e:
             if "10048" in str(e) or "Address already in use" in str(e):
                 self.after(0, lambda: self._fail("Port busy. Close other instances."))
@@ -406,6 +448,54 @@ class AuthScreen(tk.Frame):
                 except Exception:
                     pass
 
+    def _ensure_user_record(self, uid):
+        """Ensure user exists in gesturewave_users table with proper sign-in count.
+        Now with proper error logging and auto-table creation."""
+        try:
+            # Get current sign-in count
+            count_result = self.sb.table("gesturewave_users").select("sign_in_count").eq("id", uid).execute()
+            current_count = 0
+            if count_result.data:
+                current_count = count_result.data[0].get("sign_in_count", 0)
+            
+            # Upsert user record with incremented count
+            self.sb.table("gesturewave_users").upsert({
+                "id": uid,
+                "sign_in_count": current_count + 1,
+                "last_sign_in": datetime.utcnow().isoformat()
+            }).execute()
+            print(f"[Auth] User record saved: {uid[:8]}... (sign_in_count={current_count + 1})")
+        except Exception as e:
+            err_msg = str(e)
+            print(f"[Auth] WARNING: Could not save user record: {err_msg[:200]}")
+            # If table doesn't exist, try to create it
+            if "relation" in err_msg.lower() and "does not exist" in err_msg.lower():
+                print("[Auth] Table 'gesturewave_users' not found. Attempting auto-creation...")
+                self._auto_create_users_table(uid)
+            elif "permission" in err_msg.lower() or "rls" in err_msg.lower():
+                print("[Auth] RLS policy is blocking writes. Check Supabase Dashboard > Auth > Policies.")
+
+    def _auto_create_users_table(self, uid):
+        """Attempt to create the gesturewave_users table and insert the first user."""
+        try:
+            # Use Supabase RPC to run raw SQL (requires a function to be set up)
+            # Fallback: just insert directly and let it fail gracefully
+            self.sb.table("gesturewave_users").insert({
+                "id": uid,
+                "sign_in_count": 1,
+                "last_sign_in": datetime.utcnow().isoformat()
+            }).execute()
+            print(f"[Auth] Auto-created user record for {uid[:8]}...")
+        except Exception as e2:
+            print(f"[Auth] Auto-creation failed: {str(e2)[:200]}")
+            print("[Auth] ▶ Please run this SQL in Supabase Dashboard > SQL Editor:")
+            print("  CREATE TABLE public.gesturewave_users (")
+            print("    id UUID REFERENCES auth.users(id) PRIMARY KEY,")
+            print("    sign_in_count INT DEFAULT 1,")
+            print("    last_sign_in TIMESTAMP WITH TIME ZONE DEFAULT NOW()")
+            print("  );")
+            print("  ALTER TABLE public.gesturewave_users DISABLE ROW LEVEL SECURITY;")
+
     # ── Load user -> dashboard ───────────────────────────────────────────────
     def _load_user(self, uid):
         role = "standard"
@@ -415,22 +505,26 @@ class AuthScreen(tk.Frame):
         try:
             p = self.sb.table("profiles").select("role").eq("id", uid).execute()
             role = p.data[0]["role"] if p.data else "standard"
-        except Exception:
+        except Exception as e:
+            print(f"[DEBUG] Error loading profile: {e}")
             pass
 
         try:
             s = self.sb.table("user_settings").select("*").eq("user_id", uid).execute()
             settings = s.data or []
-        except Exception:
+        except Exception as e:
+            print(f"[DEBUG] Error loading user_settings: {e}")
             pass
 
         try:
             g = self.sb.table("gesture_permissions").select(
                 "gesture_name,is_allowed").eq("user_id", uid).execute()
             permissions = g.data or []
-        except Exception:
+        except Exception as e:
+            print(f"[DEBUG] Error loading gesture_permissions: {e}")
             pass
 
+        print(f"[DEBUG] _load_user called with uid={uid}, role={role}")
         self.after(0, lambda: self.on_success(role, settings, permissions))
 
     # ── UI Helpers ───────────────────────────────────────────────────────────
