@@ -1,8 +1,46 @@
+# ── Python ──────────────────────────────────────────────────────────────────
 venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+*.spec
+
+# ── Environment & Secrets ───────────────────────────────────────────────────
 .env
+.env.local
+.env.production
+*.key
+*.pem
+
+# ── IDE / Editor ────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Node.js (frontend-app) ─────────────────────────────────────────────────
 node_modules/
-venv/
-.env
+.next/
+out/
+package-lock.json
+
+# ── Agent / Tool artifacts ──────────────────────────────────────────────────
+.agents/
+graphify-out/
+.gemini/
+
+# ── Session files ───────────────────────────────────────────────────────────
+.gesturewave_session.json
+.gesturewave_demo_used
+
+# ── OS junk ─────────────────────────────────────────────────────────────────
+*.log
+*.tmp
