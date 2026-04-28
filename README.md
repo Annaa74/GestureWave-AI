@@ -1,134 +1,43 @@
-<div align="center">
-  <img src="assets/banner.png" alt="GestureWave AI Banner" width="100%" />
+# GestureWave AI 🖐️
+![GestureWave Banner](assets/banner.png)
+### Touch-Free Gesture Control System
 
-  # GestureWave AI
-  **Real-Time, Touch-Free Gesture Control System**
+**GestureWave AI v2.1** is a real-time, touch-free hand gesture recognition engine that maps your hand movements to your PC cursor and actions using computer vision—no extra hardware required.
 
-  [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
-  [![MediaPipe](https://img.shields.io/badge/MediaPipe-Enabled-orange.svg)](https://developers.google.com/mediapipe)
-  [![OpenCV](https://img.shields.io/badge/OpenCV-Computer_Vision-green.svg)](https://opencv.org/)
-  [![Vercel](https://img.shields.io/badge/Vercel-Deployed-black?logo=vercel)](https://gesture-wave-ai.vercel.app/)
-  [![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+## Key Features
+- **Premium GUI Dashboard**: Full settings menu to control smoothing, dead zones, click sensitivity, and live event logs smoothly wrapped in a Dark Mode Tkinter UI.
+- **8 Native Gestures**: 
+  - ☝️ **Move cursor**
+  - 🤏 **Left click**
+  - 🤌 **Right click**
+  - ⚡ **Double click**
+  - 🤏→ **Drag and Drop**
+  - ✌️ **Scroll up/down**
+  - 🔍 **Zoom in/out**
+  - ✋ **Pause tracking**
+- **Custom App Shortcuts**: Press `R` in front of your camera to record custom hand poses. (Currently, `Gesture_1` automatically launches LinkedIn!)
+- **Windows Installer**: One-click `.exe` builder via GitHub actions, entirely deployable. 
+- **Next.js Frontend**: Included documentation, feature showcase, and community routing inside the `/frontend-app/` directory.
 
-  [**Explore the Live Dashboard →**](https://gesture-wave-ai.vercel.app/)
-</div>
+## Tech Stack
+- **AI/Vision**: Python, MediaPipe, OpenCV, NumPy
+- **Desktop Control**: PyAutoGUI, Tkinter
+- **Continuous Integration**: GitHub Actions, PyInstaller, Inno Setup (ISCC)
+- **Frontend App**: Next.js, React, Tailwind CSS, Framer Motion
 
----
+## Installation & Usage
 
-## 🌊 Overview
+**Method 1: Desktop Installer (Easiest)**
+1. Check the GitHub Actions artifacts or your repository releases.
+2. Download `GestureWaveAI_Installer.exe` and follow the standard Windows setup wizard.
+3. Launch directly from your start menu.
 
-**GestureWave AI (v2.1)** is an advanced, touch-free gesture control engine that maps physical hand movements to digital desktop actions in real-time. By leveraging computer vision and machine learning models, it establishes a seamless, invisible interface between you and your computer—turning your webcam into a high-precision peripheral.
-
-Whether you are presenting to a large room, experimenting with spatial interfaces, or building accessible environments, GestureWave AI pushes the boundaries of human-computer interaction (HCI) using standard hardware.
-
----
-
-## ✨ Features
-
-- **Zero-Latency Tracking:** High-speed hand landmark detection optimized for standard CPU execution using MediaPipe.
-- **Premium GUI Dashboard:** A sleek, Dark Mode desktop launcher (`app.py`) with real-time logs, status indicators, and live settings adjustment.
-- **Advanced Cursor Smoothing:** Implements **Exponential Moving Average (EMA)** and **Velocity-adaptive dampening** to eliminate jitter while maintaining surgical precision.
-- **Dead Zone Suppression:** Intelligent filtering that ignores micro-tremors for a stable productivity experience.
-- **Custom Gesture Engine:** Built-in capability to record (`R` key), extract features, and register new multi-dimensional gestures on the fly.
-- **Web Showcase Dashboard:** A full-scale Next.js application (`/frontend-app/`) featuring deep documentation and a community portal.
-
----
-
-## 🛠️ Tech Stack
-
-This system is built entirely on a robust ecosystem specifically chosen for inference speed and operational stability.
-
-| Technology | Core Responsibility |
-| :--- | :--- |
-| **Python 3.8+** | Primary application logic and state management |
-| **MediaPipe** | Sub-millisecond hand tracking and topology extraction |
-| **OpenCV** | Matrix manipulation, frame streaming, and HUD rendering |
-| **PyAutoGUI** | Operating-system-level simulated mouse and keyboard control |
-| **Tkinter** | Lightweight, high-performance configuration and launcher UI |
-| **NumPy** | High-speed vector math and coordinate transformations |
-| **Next.js 15** | Modern web dashboard and documentation showcase |
-| **GitHub Actions** | Automated CI/CD pipeline for generating Windows executables |
-
----
-
-## 🏗️ Project Structure
-
-The repository is highly modular, deeply separating the vision processing pipeline from operating system overrides.
-
-```text
-GestureWave-AI/
-├── app.py                 # Premium Desktop launcher (Tkinter)
-├── main.py                # Core Gesture Engine runtime (MediaPipe/OpenCV)
-├── core/
-│   └── config.py          # Global runtime & threshold configurations
-├── gesture_registry.py    # Custom gesture storage and matching logic
-├── gesture_utils.py       # Landmark normalization and spatial helpers
-├── feature_extraction.py  # Advanced feature vector calculations
-├── frontend-app/          # Next.js 15 frontend showcase & metrics dashboard
-├── installer.iss          # Windows execution installer config (Inno Setup)
-├── assets/                # Visual assets, banners, and interface icons
-└── requirements.txt       # Python dependency manifest
-```
-
----
-
-## ✅ Work Accomplished (Milestones)
-
-- [x] **Core Engine (v1.0):** Basic hand tracking and cursor mapping implemented.
-- [x] **GUI Launcher (v2.0):** Developed the Dark Mode Tkinter interface with threading to prevent UI freezing during tracking.
-- [x] **Precision Layer:** Added Velocity-adaptive EMA smoothing and Dead Zone thresholds to solve the "shaky cursor" problem.
-- [x] **Gesture Registry:** Implemented a recording pipeline that allows users to save custom hand poses to a local registry.
-- [x] **Web Integration:** Launched a high-fidelity Next.js landing page with Framer Motion animations.
-- [x] **Packaging:** Configured `Inno Setup` and `PyInstaller` for a seamless `.exe` distribution experience.
-
----
-
-## 🚀 Installation
-
-Getting GestureWave AI running locally only takes a few minutes. Follow the procedure below to configure your environment.
-
-> [!NOTE]  
-> **Prerequisites:** Ensure you have **Python 3.8+** installed and your operating system grants the terminal access to a working webcam.
-
-**1. Clone the repository**
+**Method 2: Run from Source (For Developers)**
 ```bash
-git clone https://github.com/Annaa74/GestureWave-AI.git
-cd GestureWave-AI
-```
+# Safely restrict NumPy to prevent MediaPipe architecture clashes
+pip install "numpy<2" -r requirements.txt
 
-**2. Create a Virtual Environment**
-Generating an isolated environment ensures application stability and prevents dependency conflicts.
-```bash
-python -m venv venv
-```
-
-**3. Activate the Environment**
-- **Windows:**
-  ```bash
-  venv\Scripts\activate
-  ```
-- **macOS / Linux:**
-  ```bash
-  source venv/bin/activate
-  ```
-
-**4. Install Dependencies**
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## 💻 Running the Project
-
-GestureWave AI has two distinct entry points, depending on if you want to use the application normally or debug the pipeline.
-
-> [!WARNING]  
-> **Important Runtime Note:** Do not run `app.py` and `main.py` simultaneously. Both files will attempt to lock your machine's primary camera stream, resulting in a system error or crash.
-
-### Normal Flow (Recommended)
-Use the UI launcher to securely boot the program. You can adjust your smoothing and sensitivity preferences via the interface.
-```bash
+# Start the premium GUI Launcher
 python app.py
 ```
 *Click **"Start Tracking"** inside the UI window to boot the tracking pipeline.*
@@ -195,4 +104,127 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 <div align="center">
   <i>Control space, not screens. Developed by the GestureWave AI Team.</i>
+</div>
+
+---
+
+## 💻 Usage
+
+### Normal Mode (Recommended)
+```bash
+python app.py
+```
+1. Sign in with Google OAuth or Email/Password (or try Demo mode)
+2. Click **▶ Start Tracking** to begin
+3. Use hand gestures to control your desktop
+4. Press **ESC** in the camera window or click **■ Stop** to end
+5. Adjust settings in the **Settings** tab — changes apply live
+
+### Development Mode
+```bash
+python main.py
+```
+Bypasses authentication and launches the tracking engine directly.
+
+> [!WARNING]
+> Do not run `app.py` and `main.py` simultaneously — both will try to lock the camera.
+
+---
+
+## ⚙️ Configuration
+
+All parameters are tunable in `core/config.py`:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `SMOOTH_ALPHA` | 0.30 | Cursor smoothing factor (lower = smoother, higher = faster) |
+| `DEAD_ZONE` | 2px | Minimum pixel movement to register |
+| `CLICK_THRESH` | 30px | Distance threshold for pinch detection |
+| `CLICK_COOLDOWN` | 0.30s | Minimum time between consecutive clicks |
+| `PINCH_STABLE_FRAMES` | 3 | Frames the pinch must be held before it counts |
+| `LEFT_CLICK_FREEZE` | 0.05s | Brief cursor lock after click fires |
+| `SCROLL_AMOUNT` | 100 | Scroll wheel amount per gesture |
+| `SAFE_TOP_BAR` | 90px | Clicks blocked in this top region |
+
+---
+
+## 🛡️ Safety & Security
+
+### What GestureWave AI CAN Do
+- ✅ Move the mouse cursor
+- ✅ Left click, right click, double click
+- ✅ Scroll up/down
+- ✅ Zoom in/out (Ctrl+Plus / Ctrl+Minus)
+
+### What GestureWave AI CANNOT Do
+- ❌ Create, delete, or modify files
+- ❌ Type text or press arbitrary keys
+- ❌ Access system settings
+- ❌ Trigger dangerous hotkeys (Alt+F4, Ctrl+W, Ctrl+Delete, Win key, etc.)
+- ❌ Execute shell commands
+- ❌ Modify the registry or environment variables
+
+The `BLOCKED_HOTKEYS` constant in `core/actions.py` explicitly lists every dangerous key combination that is permanently prohibited.
+
+---
+
+## 🔮 Roadmap
+
+- [ ] **Kalman Filter** — Replace EMA smoothing with Kalman filter for cursor stabilization
+- [ ] **Multi-Hand Support** — Two-handed chord gestures for complex shortcuts
+- [ ] **Gesture Telemetry** — Log gesture sessions to Supabase for usage analytics
+- [ ] **Custom Gesture Registry** — User-defined gestures mapped to custom actions
+- [ ] **System Tray Mode** — Run as a background process with tray icon
+- [ ] **Cross-Platform** — macOS and Linux camera backend support
+
+---
+
+## 🛑 Known Limitations
+
+- **Lighting Dependency** — Strong backlighting or very low light reduces MediaPipe's detection confidence
+- **Occlusion Errors** — If the thumb is hidden behind the palm (from the camera's perspective), pinch detection may fail
+- **Single Hand** — Currently tracks only one hand at a time
+- **Windows Only** — DirectShow camera backend is Windows-specific (macOS/Linux would need a different backend)
+
+---
+
+## 🏢 Use Cases
+
+| Scenario | How GestureWave AI Helps |
+|----------|--------------------------|
+| **Presentations** | Control slides naturally from across the room |
+| **Accessibility** | Interact with desktop UIs without physical peripherals |
+| **Medical/Industrial** | Touchless interfaces in sterile or hazardous environments |
+| **Interactive Art** | Foundation for smart mirrors and spatial installations |
+| **Research** | Baseline for HCI and spatial computing experiments |
+
+---
+
+## 📦 Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Vision** | MediaPipe 0.10.5 | Hand landmark detection (21-point model) |
+| **Computer Vision** | OpenCV 4.8.1 | Camera capture, frame processing, HUD rendering |
+| **System Control** | PyAutoGUI | Mouse/keyboard action execution |
+| **Backend** | Supabase (PostgreSQL) | Authentication, user records, session management |
+| **UI Framework** | Tkinter | Desktop GUI with dark theme |
+| **Math** | NumPy | Vector calculations, distance computation |
+
+---
+
+## 📄 License
+
+Distributed under the **MIT License**. See [`LICENSE`](LICENSE) for more information.
+
+---
+
+<div align="center">
+
+  **GestureWave AI** — Control space, not screens.
+
+  Developed with 💙 by **[Aditya Yadav](https://github.com/Annaa74)**
+
+  [![GitHub](https://img.shields.io/badge/GitHub-Annaa74-181717.svg?logo=github&logoColor=white)](https://github.com/Annaa74)
+
 </div>

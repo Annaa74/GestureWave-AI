@@ -3,13 +3,17 @@
 
 # Core hand tracking
 mediapipe==0.10.5
-opencv-python==4.13.0.92
+opencv-python==4.8.1.78
 
 # Input simulation
 PyAutoGUI==0.9.54
 
 # Math / array processing
 numpy>=1.24.0,<2.0.0
+
+# Database & Auth
+supabase>=2.0.0
+python-dotenv>=1.0.0
 
 # Optional: GUI launcher
 # (tkinter ships with standard Python — no pip install needed)
